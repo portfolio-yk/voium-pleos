@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  자막 화면 (Figma Design 영역: 217:4090 대기, 120:2167 듣는 중, 120:3723 일시 정지,
+  217:4175 마이크 오류, 120:5263 마이크 권한, 217:4207 도움말).
+  입자 링은 화면 오른쪽에 걸쳐 둡니다. 대기 중에는 크고 회색(1073dp), 듣는 중에는 900dp 크기로 줄어듭니다.
+  위치는 Figma Screen 프레임(1700×996) 기준 dp 값입니다.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/voium_background"
+    android:clipChildren="true">
+
+    <!-- 입자 링: 대기 중 위치(x=1064, y=-16, 1073dp). 듣는 중에는 코드에서 900dp 크기(x=1060, y=28)로 줄입니다. -->
+    <com.example.pleos.VoiceOrbView
+        android:id="@+id/voice_orb"
+        android:layout_width="1073dp"
+        android:layout_height="1073dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-16dp"
+        android:layout_marginEnd="-437dp" />
+
+    <FrameLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/include_status_row" />
+
+        <!-- previous_lines: 지난 세 문단. 오래된 줄일수록 흐립니다. -->
+        <LinearLayout
+            android:id="@+id/previous_lines"
+            android:layout_width="1100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="192dp"
+            android:alpha="0.9"
+            android:orientation="vertical" />
+
+        <!-- current_caption -->
+        <LinearLayout
+            android:id="@+id/current_caption"
+            android:layout_width="1100dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="470dp"
+            android:layout_marginBottom="80dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/speaker_pill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="24dp"
+                    android:paddingTop="12dp"
+                    android:paddingEnd="28dp"
+                    android:paddingBottom="12dp">
+
+                    <View
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:background="@drawable/bg_speaker_dot"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/speaker_pill_label"
+                        style="@style/Voium.Text.BodySmallStrong"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:textColor="#FFFFFFFF"
+                        tools:text="나 · 말하는 중" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/current_time"
+                    style="@style/Voium.Text.BodySmallStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textColor="@color/voium_text_quaternary"
+                    tools:text="오후 12:43" />
+            </LinearLayout>
+
+            <!-- 길어지면 마지막 줄이 보이도록 아래로 따라갑니다. -->
+            <ScrollView
+                android:id="@+id/current_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="28dp"
+                android:layout_weight="1"
+                android:fadingEdgeLength="48dp"
+                android:overScrollMode="never"
+                android:requiresFadingEdge="vertical"
+                android:scrollbars="none">
+
+                <TextView
+                    android:id="@+id/current_text"
+                    style="@style/Voium.Text.CaptionCurrent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:accessibilityLiveRegion="polite"
+                    tools:text="다들 안전벨트 했지?\n휴게소까지 20분 남았대" />
+            </ScrollView>
+        </LinearLayout>
+
+        <!--
+          suggestion_placeholder: 듣는 중인데 아직 대화가 없으면 시간대에 맞는 대화 제안을 돌려 보여 주고(154:3640),
+          통화 등으로 멈췄으면 같은 자리에 멈춘 이유를 보여 줍니다(120:5243).
+        -->
+        <LinearLayout
+            android:id="@+id/suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="470dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="58dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/suggestion_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_clock" />
+
+                <TextView
+                    android:id="@+id/suggestion_context"
+                    style="@style/Voium.Text.BodySmallStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@color/voium_text_secondary"
+                    tools:text="오후 12:40 · 점심시간" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/suggestion_text"
+                style="@style/Voium.Text.DisplayExtraStrong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:alpha="0.4"
+                android:maxWidth="1000dp"
+                tools:text="오늘 식사는\n어떻게 하셨어요?" />
+
+            <LinearLayout
+                android:id="@+id/suggestion_dots"
+                android:layout_width="wrap_content"
+                android:layout_height="12dp"
+                android:layout_marginTop="28dp"
+                android:importantForAccessibility="no"
+                android:orientation="horizontal" />
+        </LinearLayout>
+
+        <!-- 대기 (217:4090): 대화를 시작할까요? -->
+        <LinearLayout
+            android:id="@+id/start_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="300dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/Voium.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:text="@string/idle_title"
+                android:textFontWeight="800"
+                android:textSize="96sp" />
+
+            <TextView
+                style="@style/Voium.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:text="@string/idle_subtitle"
+                android:textColor="@color/voium_hint"
+                android:textFontWeight="700"
+                android:textSize="40sp" />
+
+            <!-- btn/대화 시작: ivi_basic_button Large / Secondary, 360×100 -->
+            <TextView
+                android:id="@+id/start_button"
+                style="@style/Voium.Text.TitleSmallStrong"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="52dp"
+                android:background="@drawable/bg_button_filled_large"
+                android:gravity="center"
+                android:text="@string/start_conversation"
+                android:textColor="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="180dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_star_key" />
+
+                <TextView
+                    style="@style/Voium.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/idle_star_hint"
+                    android:textColor="@color/voium_hint"
+                    android:textFontWeight="700"
+                    android:textSize="32sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 오류 (217:4175 마이크 오류, 120:5263 마이크 권한): 빨간 원 아이콘 · 제목 · 설명 · 버튼 -->
+        <LinearLayout
+            android:id="@+id/error_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="230dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:background="@drawable/bg_error_circle"
+                android:importantForAccessibility="no">
+
+                <ImageView
+                    android:layout_width="70.4dp"
+                    android:layout_height="70.4dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_mic_off" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/error_title"
+                style="@style/Voium.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:accessibilityHeading="true"
+                android:accessibilityLiveRegion="assertive"
+                android:maxWidth="1300dp"
+                android:textFontWeight="800"
+                android:textSize="72sp"
+                tools:text="@string/mic_error_title" />
+
+            <TextView
+                android:id="@+id/error_subtitle"
+                style="@style/Voium.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:maxWidth="1300dp"
+                android:textColor="@color/voium_hint"
+                android:textFontWeight="700"
+                android:textSize="36sp"
+                tools:text="@string/mic_error_subtitle" />
+
+            <!-- btn/다시 시도(밝은 버튼) 또는 btn/권한 설정 열기(채운 버튼): ivi_basic_button Medium, 높이 80 -->
+            <TextView
+                android:id="@+id/error_button"
+                style="@style/Voium.Text.BodyLargeStrong"
+                android:layout_width="wrap_content"
+                android:layout_height="80dp"
+                android:layout_marginTop="77dp"
+                android:background="@drawable/bg_button_basic_medium"
+                android:gravity="center"
+                android:minWidth="120dp"
+                android:paddingHorizontal="32dp"
+                tools:text="@string/retry" />
+        </LinearLayout>
+
+        <!-- 낯선 목소리 제안 (93:1389): 주행이 끝나고 정차 중이면 등록하지 않은 목소리를 프로필로 만들자고 묻습니다. -->
+        <LinearLayout
+            android:id="@+id/guest_card"
+            android:layout_width="680dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="351dp"
+            android:layout_marginEnd="120dp"
+            android:background="@drawable/bg_sheet"
+            android:clickable="true"
+            android:elevation="16dp"
+            android:orientation="vertical"
+            android:padding="44dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/guest_number"
+                    style="@style/Voium.Text"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_guest_number"
+                    android:gravity="center"
+                    android:importantForAccessibility="no"
+                    android:textColor="#FF6B7079"
+                    android:textFontWeight="800"
+                    android:textSize="32sp"
+                    tools:text="1" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Voium.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="@string/guest_title"
+                        android:textFontWeight="800"
+                        android:textSize="40sp" />
+
+                    <TextView
+                        android:id="@+id/guest_subtitle"
+                        style="@style/Voium.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/voium_hint"
+                        android:textFontWeight="700"
+                        android:textSize="28sp"
+                        tools:text="이번 주행에서 화자 1로 표시됐어요" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/guest_close"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/close"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_close_large" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/guest_quote"
+                style="@style/Voium.Text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_help_step"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:paddingHorizontal="28dp"
+                android:paddingVertical="22dp"
+                android:textColor="#FF454950"
+                android:textFontWeight="700"
+                android:textSize="30sp"
+                tools:text="“저 배고파요. 휴게소 들러요?”  오후 12:42" />
+
+            <TextView
+                android:id="@+id/guest_merge"
+                style="@style/Voium.Text.BodyLargeStrong"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_button_basic_medium"
+                android:gravity="center"
+                android:text="@string/guest_merge" />
+
+            <TextView
+                android:id="@+id/guest_new"
+                style="@style/Voium.Text.BodyLargeStrong"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_button_filled_medium"
+                android:gravity="center"
+                android:text="@string/guest_new"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <!-- 알림 (ivi_toast_popup, 154:3640): 진한 회색 바탕 흰 글자 -->
+        <TextView
+            android:id="@+id/notice"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="60dp"
+            android:accessibilityLiveRegion="polite"
+            android:background="@drawable/bg_toast"
+            android:paddingHorizontal="40dp"
+            android:paddingVertical="24dp"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:text="다른 앱이 오디오를 사용해 자막을 멈췄어요." />
+    </FrameLayout>
+    <!-- 도움말 시트 (217:4207): 화면을 어둡게 덮고 가운데 1500×900 시트 -->
+    <FrameLayout
+        android:id="@+id/help_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/voium_dim"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="1500dp"
+            android:layout_height="900dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_sheet"
+            android:clickable="true"
+            android:elevation="24dp"
+            android:orientation="vertical">
+
+            <!-- sheet_header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="48dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="20dp">
+
+                <TextView
+                    style="@style/Voium.Text.TitleLargeStrong"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:accessibilityHeading="true"
+                    android:text="@string/help" />
+
+                <FrameLayout
+                    android:id="@+id/help_close"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_circle_basic"
+                    android:clickable="true"
+                    android:contentDescription="@string/close"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_close_large" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/voium_divider" />
+
+            <!-- sheet_body -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingHorizontal="48dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="28dp">
+
+                <TextView
+                    style="@style/Voium.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/help_heading"
+                    android:textFontWeight="800"
+                    android:textSize="40sp" />
+
+                <TextView
+                    style="@style/Voium.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/help_description"
+                    android:textColor="@color/voium_hint"
+                    android:textFontWeight="700"
+                    android:textSize="28sp" />
+
+                <!-- 단계 목록은 코드에서 채웁니다(번호 원 + 설명). -->
+                <LinearLayout
+                    android:id="@+id/help_steps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/help_vehicle_settings"
+                    style="@style/Voium.Text.BodyLargeStrong"
+                    android:layout_width="290dp"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="40dp"
+                    android:background="@drawable/bg_button_filled_medium"
+                    android:gravity="center"
+                    android:text="@string/open_vehicle_settings"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

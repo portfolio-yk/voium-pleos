@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 프로필 상태 배지: "● 지금 탑승 중"(화자 색), "● 다시 등록 권장"(회색), "목소리 등록됨"(글자만) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/badge"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="14dp"
+    android:paddingTop="2dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="2dp">
+
+    <View
+        android:id="@+id/badge_dot"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_marginEnd="8dp"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/badge_label"
+        style="@style/Voium.Text.BodySmallStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="지금 탑승 중" />
+</LinearLayout>

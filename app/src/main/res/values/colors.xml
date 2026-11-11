@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- 자막 화면 (sori-node styles.css와 같은 값) -->
+    <color name="caption_background">#FF101216</color>
+    <color name="caption_text">#FFF4F6F8</color>
+    <color name="caption_history">#FFAEB6C0</color>
+    <color name="caption_partial">#FFCCD3DC</color>
+    <color name="caption_muted">#FF909AA6</color>
+    <color name="caption_empty_title">#FFB7BEC7</color>
+    <color name="caption_error">#FFECD0B7</color>
+    <color name="caption_status_text">#FFC5CCD4</color>
+    <color name="status_idle">#FF77818E</color>
+    <color name="status_recording">#FF9CC9BD</color>
+    <color name="status_connecting">#FFC5CCD4</color>
+    <color name="status_error">#FFE7BD97</color>
+    <color name="status_preview">#FF9CC9EE</color>
+
+    <!-- VOIUM C2 (Figma 42:1046) 밝은 자막 화면 -->
+    <color name="voium_background">#FFFCFCFD</color>
+    <color name="voium_surface">#FFFFFFFF</color>
+    <color name="voium_text_primary">#FF131417</color>       <!-- text/dark/primary -->
+    <color name="voium_text_secondary">#D6131417</color>     <!-- text/dark/secondary (84%) -->
+    <color name="voium_text_partial">#B3131417</color>       <!-- 아직 바뀔 수 있는 중간 결과 (70%). 확정되며 진해질 때 덜 튀도록 차이를 줄였습니다. -->
+    <color name="voium_icon">#FF45474E</color>
+    <color name="voium_divider">#33131417</color>            <!-- divider/tertiary (20%) -->
+    <color name="voium_gray">#FF6E7380</color>
+    <color name="voium_gray_soft">#4D6E7380</color>          <!-- 대화 제안의 비활성 점 (30%) -->
+    <color name="voium_unknown_bg">#FFEDEEF2</color>         <!-- basic/100 -->
+    <color name="voium_listening_bg">#1F13996F</color>       <!-- 초록 12% -->
+    <color name="voium_listening_text">#FF0E7A58</color>
+    <color name="voium_switch_on">#FF02C265</color>          <!-- switch/on -->
+    <color name="voium_switch_off">#FFC9CCD3</color>
+    <color name="voium_error">#FFB4471F</color>
+    <color name="voium_button_filled">#FF44464E</color>      <!-- button/filled/enabled -->
+    <color name="voium_button_basic">#0D131417</color>       <!-- button/basic/enabled (5%) -->
+    <color name="voium_text_quaternary">#52131417</color>    <!-- text/dark/quaternary (32%) -->
+    <color name="voium_basic100">#FFEDEEF2</color>           <!-- basic/100 -->
+    <color name="voium_danger">#FFD93B3B</color>             <!-- 프로필 삭제 -->
+    <color name="voium_warning">#FFD97706</color>            <!-- 목소리 등록: 다시 요청 -->
+    <color name="voium_karaoke_rest">#FFBFC3CC</color>       <!-- 아직 읽지 않은 글자 -->
+    <color name="voium_progress_rest">#99C3C3CC</color>      <!-- 진행 막대의 남은 칸 -->
+    <color name="voium_idle_chip_bg">#246B7079</color>      <!-- 대기 중 칩 (14%) -->
+    <color name="voium_idle_text">#FF454950</color>
+    <color name="voium_error_chip_bg">#24E0453A</color>     <!-- 마이크 오류 칩 (14%) -->
+    <color name="voium_error_text">#FFB3261E</color>
+    <color name="voium_driving_bg">#29E8B100</color>        <!-- 주행 중 칩 (16%) -->
+    <color name="voium_driving_text">#FF6B4C00</color>
+    <color name="voium_hint">#FF8A8F98</color>              <!-- 대기 화면 설명 글자 -->
+    <color name="voium_picker_note">#FF737882</color>       <!-- 사용자 지정 색 안내 -->
+    <color name="voium_dim">#73000000</color>               <!-- 시트 뒤 어둡게 -->
+    <color name="voium_guest_dot">#FFC3C3CC</color>          <!-- 등록하지 않은 화자 점 -->
+</resources>

@@ -1,0 +1,13 @@
+{
+  "name": "sori-node",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js와 웹 표준만으로 만든 Speechmatics 실시간 화자 자막",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  }
+}

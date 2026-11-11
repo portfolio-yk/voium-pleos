@@ -1,0 +1,513 @@
+:root {
+  color-scheme: dark;
+  --background: #101216;
+  --active-accent: #909aa6;
+  --text: #f4f6f8;
+  --history: #aeb6c0;
+  --partial: #ccd3dc;
+  --muted: #909aa6;
+  --speaker-one: #9cc9ee;
+  --speaker-two: #e7bd97;
+  --speaker-three: #c6b5ec;
+  --speaker-four: #a7ccba;
+  --speaker-five: #d9cf97;
+  --speaker-six: #e1aec5;
+  --page-gutter: clamp(28px, 6.25vw, 96px);
+  --caption-size: clamp(28px, 3.2vw, 46px);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--text);
+}
+
+button {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+.caption-window:focus-visible {
+  outline: 2px solid var(--speaker-one);
+  outline-offset: 5px;
+}
+
+button:disabled {
+  cursor: wait;
+}
+
+button svg {
+  display: block;
+  flex: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.caption-app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  overflow: hidden;
+}
+
+.app-bar {
+  z-index: 2;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  padding: 0 calc(var(--page-gutter) - 16px);
+  background: var(--background);
+}
+
+.status-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -.1px;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: #77818e;
+  transition: background-color 160ms ease;
+}
+
+.status-button.is-listening,
+body[data-state="listening"] .status-button,
+body[data-state="recording"] .status-button {
+  color: #bac5d0;
+}
+
+.status-button.is-listening .status-dot,
+body[data-state="listening"] .status-dot,
+body[data-state="recording"] .status-dot {
+  background: #9cc9bd;
+}
+
+.status-button.is-preview .status-dot,
+body.demo-mode .status-dot,
+body[data-state="preview"] .status-dot {
+  background: var(--speaker-one);
+}
+
+.status-button.is-error .status-dot,
+body[data-state="error"] .status-dot {
+  background: #e7bd97;
+}
+
+.status-button.is-connecting .status-dot {
+  background: #c5ccd4;
+}
+
+.settings-button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  color: #89939e;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.caption-window {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 24px var(--page-gutter) max(56px, env(safe-area-inset-bottom));
+  scroll-padding-top: 24px;
+  scroll-padding-bottom: 56px;
+}
+
+.caption-window::-webkit-scrollbar {
+  display: none;
+}
+
+.caption-window:focus-visible {
+  outline-offset: -8px;
+}
+
+.conversation {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 44px;
+  width: 100%;
+  max-width: 1120px;
+  min-height: 100%;
+  margin: 0 auto;
+}
+
+.conversation:empty {
+  display: none;
+}
+
+.turn {
+  --speaker-color: var(--muted);
+  position: relative;
+  flex: none;
+  margin: 0;
+}
+
+.turn.is-new {
+  animation: turn-appear 200ms ease-out both;
+}
+
+.turn.speaker-one,
+.turn[data-speaker="S1"],
+.turn[data-speaker="1"] {
+  --speaker-color: var(--speaker-one);
+}
+
+.turn.speaker-two,
+.turn[data-speaker="S2"],
+.turn[data-speaker="2"] {
+  --speaker-color: var(--speaker-two);
+}
+
+.turn.speaker-three,
+.turn[data-speaker="S3"],
+.turn[data-speaker="3"] {
+  --speaker-color: var(--speaker-three);
+}
+
+.turn.speaker-four,
+.turn[data-speaker="S4"],
+.turn[data-speaker="4"] {
+  --speaker-color: var(--speaker-four);
+}
+
+.turn.speaker-five,
+.turn[data-speaker="S5"],
+.turn[data-speaker="5"] {
+  --speaker-color: var(--speaker-five);
+}
+
+.turn.speaker-six,
+.turn[data-speaker="S6"],
+.turn[data-speaker="6"] {
+  --speaker-color: var(--speaker-six);
+}
+
+.turn-label {
+  position: sticky;
+  z-index: 1;
+  top: -1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 28px;
+  margin: 0 0 10px;
+  padding: 4px 10px 4px 0;
+  background: var(--background);
+  color: var(--speaker-color);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -.15px;
+}
+
+.speaker-marker {
+  display: block;
+  width: 3px;
+  height: 14px;
+  position: absolute;
+  top: 7px;
+  left: -16px;
+  flex: none;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.speaker-name {
+  white-space: nowrap;
+}
+
+.turn-text {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--history);
+  font-size: var(--caption-size);
+  font-weight: 500;
+  line-height: 1.52;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  transition: color 160ms ease;
+}
+
+.turn.is-current .turn-text {
+  color: var(--text);
+}
+
+.partial-text {
+  color: var(--partial);
+}
+
+.turn:not(.is-current) .partial-text {
+  color: var(--history);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  padding-bottom: 40px;
+  text-align: center;
+}
+
+.empty-state h1 {
+  margin: 0;
+  color: #b7bec7;
+  font-size: clamp(23px, 2.1vw, 30px);
+  font-weight: 450;
+  line-height: 1.6;
+  letter-spacing: -.035em;
+}
+
+.empty-state p {
+  max-width: 32em;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.latest-button {
+  position: absolute;
+  z-index: 4;
+  right: var(--page-gutter);
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid #454c56;
+  border-radius: 24px;
+  background: #252a31;
+  color: #e6ebf0;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 3px 16px #0002;
+}
+
+.notice,
+.error-message {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  width: max-content;
+  max-width: min(680px, calc(100% - 40px));
+  margin: 0;
+  padding: 13px 18px;
+  border: 1px solid #3c434c;
+  border-radius: 10px;
+  background: #242930;
+  color: #d9dfe5;
+  font-size: 14px;
+  font-weight: 450;
+  line-height: 1.6;
+  text-align: center;
+  word-break: keep-all;
+  transform: translateX(-50%);
+}
+
+.error-message {
+  color: #ecd0b7;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* Scene colour follows the current speaker; all opaque surfaces transition
+   together so scrolling labels never show a mismatched background stripe. */
+html,
+body,
+.caption-app,
+.app-bar,
+.turn-label {
+  background-color: var(--background);
+  transition: background-color 350ms ease;
+}
+
+/* The latest turn has a longer visual marker, in addition to its speaker
+   number and colour. Its text keeps exactly the same size and position. */
+.turn::before {
+  position: absolute;
+  top: 7px;
+  bottom: 2px;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--speaker-color);
+  opacity: 0;
+  content: "";
+  transform: translateX(-16px);
+  transition: opacity 180ms ease;
+}
+
+.turn.is-current::before {
+  opacity: .8;
+}
+
+.turn.is-current .speaker-marker {
+  opacity: 0;
+}
+
+.current-indicator {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  margin-left: 2px;
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, var(--speaker-color) 24%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--speaker-color) 7%, transparent);
+  color: var(--speaker-color);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0;
+}
+
+@keyframes turn-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: hover) {
+  .status-button:hover,
+  .settings-button:hover {
+    color: #d9e0e8;
+    background: #ffffff07;
+  }
+
+  .latest-button:hover {
+    background: #30363f;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --page-gutter: 28px;
+    --caption-size: 28px;
+  }
+
+  .app-bar {
+    height: 68px;
+  }
+
+  .caption-window {
+    padding-top: 16px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+  }
+
+  .conversation {
+    gap: 34px;
+  }
+
+  .turn-label {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .turn-text {
+    line-height: 1.55;
+  }
+
+  .empty-state {
+    padding-bottom: 24px;
+  }
+}
+
+@media (max-height: 500px) and (min-width: 701px) {
+  .app-bar {
+    height: 60px;
+  }
+
+  .caption-window {
+    padding-top: 12px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+
+  .conversation {
+    gap: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

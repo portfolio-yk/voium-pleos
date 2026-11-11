@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  목소리 등록 시트 (Figma Design 영역: 135:1958 시작, 135:3527 듣는 중, 135:5096 다시 요청, 135:6665 분석 중,
+  135:8234 이름·색, 169:4966 사용자 지정 색, 170:1861 너무 어두움, 170:4969 직접 지정 색).
+  설정 시트와 같은 자리·크기의 시트입니다. 오른쪽에는 이 사람의 색으로 입자 링이 걸칩니다.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/voium_dim">
+
+    <FrameLayout
+        android:id="@+id/sheet"
+        android:layout_width="1500dp"
+        android:layout_height="900dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_sheet"
+        android:clickable="true"
+        android:clipToOutline="true"
+        android:elevation="24dp"
+        android:focusable="false">
+
+        <!-- 입자 링: 시트 기준 x=940, y=150, 648dp. 오른쪽은 시트 밖으로 잘립니다. -->
+        <com.example.pleos.VoiceOrbView
+            android:id="@+id/voice_orb"
+            android:layout_width="648dp"
+            android:layout_height="648dp"
+            android:layout_marginStart="940dp"
+            android:layout_marginTop="150dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- sheet_header: 뒤로 · 목소리 등록 · 문장 2/3 · 닫기 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="40dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="20dp">
+
+                <ImageView
+                    android:id="@+id/enroll_back"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/back"
+                    android:src="@drawable/ic_back" />
+
+                <TextView
+                    android:id="@+id/enroll_title"
+                    style="@style/Voium.Text.TitleLargeStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:accessibilityHeading="true"
+                    android:text="@string/enroll_title" />
+
+                <LinearLayout
+                    android:id="@+id/enroll_step"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:background="@drawable/bg_chip_paused"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="22dp"
+                    android:paddingBottom="10dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/enroll_step_label"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/voium_text_secondary"
+                        tools:text="문장 2 / 3" />
+
+                    <LinearLayout
+                        android:id="@+id/enroll_step_progress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:importantForAccessibility="no"
+                        android:orientation="horizontal" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <FrameLayout
+                    android:id="@+id/enroll_close"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_circle_basic"
+                    android:clickable="true"
+                    android:contentDescription="@string/close"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_close_large" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/voium_divider" />
+
+            <!-- enroll: 단계별 내용 + 아래 버튼 줄 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingHorizontal="48dp"
+                android:paddingVertical="32dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <!-- 시작 (90:1222) -->
+                    <LinearLayout
+                        android:id="@+id/stage_intro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Voium.Text.HeadlineSmallExtraStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/enroll_intro_headline" />
+
+                        <LinearLayout
+                            android:id="@+id/intro_steps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="40dp"
+                            android:orientation="vertical" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="40dp"
+                            android:background="@drawable/bg_panel_basic"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="28dp"
+                            android:paddingVertical="18dp">
+
+                            <TextView
+                                style="@style/Voium.Text.BodyMediumStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/enroll_tips_title" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLarge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/enroll_tip_seat"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLarge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/enroll_tip_noise"
+                                android:textColor="@color/voium_text_secondary" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 듣는 중 · 다시 요청 · 실패 (90:1408) -->
+                    <LinearLayout
+                        android:id="@+id/stage_reading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:id="@+id/reading_pill"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="24dp"
+                            android:paddingTop="12dp"
+                            android:paddingEnd="28dp"
+                            android:paddingBottom="12dp">
+
+                            <ImageView
+                                android:id="@+id/reading_pill_icon"
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:importantForAccessibility="no" />
+
+                            <TextView
+                                android:id="@+id/reading_pill_label"
+                                style="@style/Voium.Text.BodySmallStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:accessibilityLiveRegion="polite"
+                                android:maxWidth="780dp"
+                                tools:text="듣는 중" />
+                        </LinearLayout>
+
+                        <com.example.pleos.KaraokeView
+                            android:id="@+id/reading_karaoke"
+                            android:layout_width="690dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="36dp" />
+
+                        <TextView
+                            android:id="@+id/reading_help"
+                            style="@style/Voium.Text.BodyLarge"
+                            android:layout_width="780dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="36dp"
+                            android:accessibilityLiveRegion="polite"
+                            android:textColor="@color/voium_text_secondary"
+                            tools:text="@string/enroll_reading_help" />
+                    </LinearLayout>
+
+                    <!-- 분석 중 (135:6665) -->
+                    <LinearLayout
+                        android:id="@+id/stage_analyzing"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            style="@style/Voium.Text.TitleLargeExtraStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:accessibilityLiveRegion="polite"
+                            android:text="@string/enroll_analyzing_title" />
+
+                        <TextView
+                            style="@style/Voium.Text.BodyMediumStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:text="@string/enroll_analyzing_desc"
+                            android:textColor="@color/voium_text_secondary"
+                            android:textFontWeight="400" />
+                    </LinearLayout>
+
+                    <!-- 이름·색 (91:1566) -->
+                    <LinearLayout
+                        android:id="@+id/stage_naming"
+                        android:layout_width="780dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:id="@+id/naming_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="18dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="22dp"
+                            android:paddingBottom="10dp">
+
+                            <ImageView
+                                android:id="@+id/naming_badge_check"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:importantForAccessibility="no" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodySmallStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:text="@string/enroll_done_badge" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/Voium.Text.HeadlineSmallExtraStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:accessibilityHeading="true"
+                            android:text="@string/enroll_naming_question" />
+
+                        <TextView
+                            style="@style/Voium.Text.BodyLargeStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:labelFor="@id/naming_name_input"
+                            android:text="@string/profile_field_name"
+                            android:textColor="@color/voium_text_secondary" />
+
+                        <EditText
+                            android:id="@+id/naming_name_input"
+                            style="@style/Voium.Text"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:layout_marginTop="16dp"
+                            android:background="@drawable/bg_text_field"
+                            android:hint="@string/enroll_name_hint"
+                            android:imeOptions="actionDone"
+                            android:inputType="text"
+                            android:paddingHorizontal="32dp"
+                            android:singleLine="true"
+                            android:textColorHint="@color/voium_text_quaternary"
+                            android:textFontWeight="400"
+                            android:textSize="36sp" />
+
+                        <TextView
+                            android:id="@+id/naming_name_error"
+                            style="@style/Voium.Text.BodySmallStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:accessibilityLiveRegion="polite"
+                            android:textColor="@color/voium_danger"
+                            android:visibility="gone" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLargeStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/profile_field_color"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <TextView
+                                android:id="@+id/naming_color_hint"
+                                style="@style/Voium.Text.BodySmallStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:text="@string/enroll_color_auto"
+                                android:textColor="@color/voium_text_quaternary" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/naming_swatches"
+                            android:layout_width="wrap_content"
+                            android:layout_height="76dp"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal" />
+                    </LinearLayout>
+
+                    <!-- 기존 프로필에 합치기 (211:4250) -->
+                    <LinearLayout
+                        android:id="@+id/stage_merge"
+                        android:layout_width="780dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/merge_title"
+                            style="@style/Voium.Text.HeadlineSmallExtraStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:accessibilityHeading="true"
+                            tools:text="화자 1은 누구인가요?" />
+
+                        <LinearLayout
+                            android:id="@+id/merge_options"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            style="@style/Voium.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/merge_note"
+                            android:textColor="@color/voium_hint"
+                            android:textFontWeight="700"
+                            android:textSize="26sp" />
+                    </LinearLayout>
+
+                    <!-- 사용자 지정 색 (169:8034) -->
+                    <FrameLayout
+                        android:id="@+id/stage_color"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:visibility="gone">
+
+                        <include layout="@layout/include_color_picker" />
+                    </FrameLayout>
+                </FrameLayout>
+
+                <!-- bottombar: 동의 안내 또는 읽은 문장 · 버튼 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/enroll_consent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_lock_small" />
+
+                        <TextView
+                            android:id="@+id/enroll_consent_text"
+                            style="@style/Voium.Text.BodySmallStrong"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/enroll_consent"
+                            android:textColor="@color/voium_text_quaternary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/enroll_done_list"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/enroll_secondary"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="wrap_content"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="24dp"
+                        android:background="@drawable/bg_button_basic_medium"
+                        android:gravity="center"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="32dp"
+                        tools:text="취소" />
+
+                    <TextView
+                        android:id="@+id/enroll_primary"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="wrap_content"
+                        android:layout_height="80dp"
+                        android:layout_marginStart="24dp"
+                        android:background="@drawable/bg_button_filled_medium"
+                        android:gravity="center"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="32dp"
+                        android:textColor="@android:color/white"
+                        tools:text="시작하기" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma C2 ambient_toggle 아이콘 (45:4104) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:strokeColor="#45474E" android:strokeWidth="2" android:strokeLineCap="round"
+        android:pathData="M4 22.6667C8 20 12 18.6667 16 18.6667C20 18.6667 24 20 28 22.6667" />
+    <path android:strokeColor="#45474E" android:strokeWidth="2" android:strokeLineCap="round"
+        android:pathData="M16 5.33333V10.6667M7.33333 8.66667L10.6667 12M24.6667 8.66667L21.3333 12" />
+</vector>

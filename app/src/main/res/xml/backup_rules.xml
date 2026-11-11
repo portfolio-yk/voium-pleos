@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 이하 백업 규칙. 목소리 식별값(개인 정보)은 백업하지 않습니다. -->
+<full-backup-content>
+    <exclude domain="file" path="voice_profiles.json" />
+    <exclude domain="file" path="conversations.json" />
+</full-backup-content>

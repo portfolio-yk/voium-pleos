@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 사용자 지정 색 (Figma 169:8034 form): HEX 코드 · 색상 · 밝기 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/color_picker"
+    android:layout_width="780dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/Voium.Text.HeadlineSmallExtraStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:accessibilityHeading="true"
+        android:text="@string/color_picker_title" />
+
+    <TextView
+        style="@style/Voium.Text.BodyLargeStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:labelFor="@id/picker_hex"
+        android:text="@string/color_picker_hex"
+        android:textColor="@color/voium_text_secondary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/picker_preview"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:importantForAccessibility="no" />
+
+        <EditText
+            android:id="@+id/picker_hex"
+            style="@style/Voium.Text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_text_field"
+            android:digits="#0123456789ABCDEFabcdef"
+            android:imeOptions="actionDone"
+            android:inputType="textCapCharacters|textNoSuggestions"
+            android:maxLength="7"
+            android:paddingHorizontal="32dp"
+            android:singleLine="true"
+            android:textFontWeight="400"
+            android:textSize="36sp" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/Voium.Text.BodyLargeStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/color_picker_hue"
+        android:textColor="@color/voium_text_secondary" />
+
+    <com.example.pleos.GradientSlider
+        android:id="@+id/picker_hue"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/color_picker_hue" />
+
+    <TextView
+        style="@style/Voium.Text.BodyLargeStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/color_picker_brightness"
+        android:textColor="@color/voium_text_secondary" />
+
+    <com.example.pleos.GradientSlider
+        android:id="@+id/picker_brightness"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/color_picker_brightness" />
+
+    <TextView
+        android:id="@+id/picker_note"
+        style="@style/Voium.Text.BodySmallStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:accessibilityLiveRegion="polite"
+        android:text="@string/color_picker_note"
+        android:textColor="@color/voium_picker_note" />
+</LinearLayout>

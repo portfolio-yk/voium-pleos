@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Pleos 음성 구체</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: 왼쪽에 앱과 같은 어두운 무대(고정), 오른쪽에 조절 패널. 좁은 화면에서는 위아래로 쌓입니다. */
+:root {
+  --bg: #F3F3F7;
+  --panel: #FFFFFF;
+  --fg: #1B1C24;
+  --muted: #646778;
+  --line: #E1E1EA;
+  --accent: #6A5CE0;
+  --accent-soft: #ECE9FF;
+  --stage: #101216;       /* 앱 자막 화면 배경과 같은 색 */
+  --stage-fg: #F4F6F8;
+  --stage-muted: #909AA6;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181E; --panel: #1E1F27; --fg: #ECECF3; --muted: #9A9CB0; --line: #2D2E39;
+    --accent: #A498FF; --accent-soft: #2A2742; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181E; --panel: #1E1F27; --fg: #ECECF3; --muted: #9A9CB0; --line: #2D2E39;
+  --accent: #A498FF; --accent-soft: #2A2742; color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+header.top { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 62ch; }
+
+/* 무대 */
+.stage-col { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (max-width: 860px) { .stage-col { position: static; } }
+.stage {
+  background: var(--stage); color: var(--stage-fg); border-radius: 18px; padding: 20px 16px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; position: relative; overflow: hidden;
+}
+.orb-box { position: relative; width: 100%; display: flex; justify-content: center; }
+#orb { display: block; width: var(--orb-w, 320px); max-width: 100%; aspect-ratio: 1; }
+.captions {
+  position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px;
+  padding: 0 8%; pointer-events: none; font-size: 22px; line-height: 1.45; font-weight: 500;
+}
+.captions .who { font-size: 13px; color: var(--stage-muted); font-weight: 500; letter-spacing: 0.02em; }
+.captions .old { color: #AEB6C0; }
+.stage-bar { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; }
+.meter-wrap { flex: 1 1 200px; min-width: 0; display: flex; align-items: center; gap: 10px; }
+#meter { width: 100%; height: 32px; display: block; }
+.lv { font-family: var(--font-mono); font-size: 12px; color: var(--stage-muted); font-variant-numeric: tabular-nums; min-width: 13ch; text-align: right; white-space: nowrap; }
+.stage-toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 12px; color: var(--stage-fg); background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 5px 11px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: rgba(164,152,255,0.22); border-color: rgba(164,152,255,0.55); }
+.chip:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 소리 입력 */
+.source { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.source h2, .group h2 { font-size: 12px; font-weight: 600; margin: 0; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; background: var(--bg); border-radius: 10px; padding: 4px; }
+@media (max-width: 520px) { .seg { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.seg button {
+  font: inherit; font-size: 13px; border: 0; border-radius: 7px; padding: 7px 4px; background: transparent; color: var(--muted); cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--fg); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+.mode-body { display: flex; flex-direction: column; gap: 8px; color: var(--muted); font-size: 13px; }
+.file-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #17181E; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #17181E; } }
+.file-name { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; min-width: 0; }
+
+/* 조절 패널 */
+.panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.group { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 6px; display: flex; flex-direction: column; }
+.group h2 { margin-bottom: 4px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label val" "range range"; gap: 2px 10px; padding: 8px 0 10px; border-top: 1px solid var(--line); }
+.row:first-of-type { border-top: 0; }
+.row label { grid-area: label; font-weight: 500; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.row .hint { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.row .val { grid-area: val; font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); align-self: start; padding-top: 1px; background: none; border: 0; cursor: pointer; border-radius: 4px; }
+.row .val:hover { color: var(--fg); }
+.row input[type=range] { grid-area: range; width: 100%; accent-color: var(--accent); margin: 4px 0 0; }
+.row.changed label::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+.row.color-row { grid-template-areas: "label val"; align-items: center; }
+.row.color-row .val { display: flex; align-items: center; gap: 8px; cursor: default; padding: 0; }
+input[type=color] { width: 40px; height: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 2px; background: var(--panel); cursor: pointer; }
+
+.export { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.export p { margin: 0; color: var(--muted); font-size: 13px; }
+.export .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toast { font-size: 12px; color: var(--accent); }
+.code-box { overflow-x: auto; background: var(--bg); border-radius: 10px; }
+pre#code { margin: 0; padding: 12px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; white-space: pre; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Pleos 음성 구체</h1>
+    <p class="sub">앱과 같은 계산으로 그립니다. 슬라이더로 모션을 고친 뒤 <b>값 복사</b>를 눌러 개발자에게 전달하세요. 값 옆 숫자를 누르면 기본값으로 돌아갑니다.</p>
+  </header>
+
+  <div class="stage-col">
+    <section class="stage" aria-label="구체 미리보기">
+      <div class="orb-box">
+        <canvas id="orb" aria-label="마이크 입력에 반응하는 점 구체"></canvas>
+        <div class="captions" id="captions" hidden>
+          <div><span class="who">운전자</span><div class="old">다음 휴게소까지 얼마나 남았어?</div></div>
+          <div><span class="who">동승자</span><div>한 20분쯤이요. 거기서 커피 한 잔 하고 가요.</div></div>
+        </div>
+      </div>
+      <div class="stage-bar">
+        <div class="meter-wrap">
+          <canvas id="meter" aria-label="최근 4초 마이크 입력 크기"></canvas>
+          <span class="lv" id="lv">0.00</span>
+        </div>
+        <div class="stage-toggles">
+          <button class="chip" id="t-captions" aria-pressed="false">자막 겹쳐 보기</button>
+          <button class="chip" id="t-zoom" aria-pressed="false">2배 크게</button>
+          <button class="chip" id="t-pause" aria-pressed="false">멈춤</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="source" aria-label="소리 입력">
+      <h2>소리 입력</h2>
+      <div class="seg" role="group" aria-label="소리 입력 방식">
+        <button id="m-mic" aria-pressed="false">내 마이크</button>
+        <button id="m-sim" aria-pressed="true">말하기 흉내</button>
+        <button id="m-file" aria-pressed="false">녹음 파일</button>
+        <button id="m-hold" aria-pressed="false">직접 조절</button>
+        <button id="m-quiet" aria-pressed="false">조용히</button>
+      </div>
+      <div class="mode-body" id="b-mic" hidden>
+        <span>컴퓨터 마이크로 직접 말해 보세요. 앱처럼 자동 음량 보정과 잡음 제거를 끄고 받습니다.</span>
+        <div class="file-row">
+          <button class="btn primary" id="mic-btn">마이크 켜기</button>
+          <span class="file-name" id="mic-state">꺼짐</span>
+        </div>
+      </div>
+      <div class="mode-body" id="b-sim">말소리처럼 음절과 쉼을 섞은 입력을 0.1초마다 보냅니다. 앱의 마이크 입력과 같은 간격입니다.</div>
+      <div class="mode-body" id="b-file" hidden>
+        <span>차 안에서 녹음한 음성 파일을 넣으면 그 소리 크기로 움직입니다. 소리도 함께 재생됩니다.</span>
+        <div class="file-row">
+          <input type="file" id="file" accept="audio/*" hidden>
+          <button class="btn primary" id="pick">파일 고르기</button>
+          <button class="btn" id="play" hidden>일시정지</button>
+          <span class="file-name" id="fname">선택한 파일 없음</span>
+        </div>
+      </div>
+      <div class="mode-body" id="b-hold" hidden>
+        <div class="row" style="border:0;padding:0">
+          <label for="hold">입력 크기 <span class="hint">0 = 무음, 0.5 ≈ 보통 말소리, 1 = 최대</span></label>
+          <span class="val" id="hold-v">0.50</span>
+          <input type="range" id="hold" min="0" max="1" step="0.01" value="0.5">
+        </div>
+      </div>
+      <div class="mode-body" id="b-quiet" hidden>입력이 0입니다. 말이 끝난 뒤 가라앉는 모습과 대기 상태를 볼 수 있습니다.</div>
+    </section>
+  </div>
+
+  <div class="panel" id="panel">
+    <section class="export">
+      <h2 style="font-size:12px;font-weight:600;margin:0;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">개발자에게 전달</h2>
+      <p>아래 코드를 OrbStyles.kt에 통째로 붙여 넣으면 앱에 같은 모션이 적용됩니다.</p>
+      <p>마이크 감도(어느 크기부터 반응할지)는 마이크마다 달라서 개발자가 차량에서 맞춥니다. 여기서는 움직임만 정해 주세요.</p>
+      <div class="actions">
+        <button class="btn primary" id="copy">값 복사</button>
+        <button class="btn" id="reset">모두 기본값으로</button>
+        <span class="toast" id="toast" role="status"></span>
+      </div>
+      <div class="code-box"><pre id="code"></pre></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ---- 값 정의 (앱의 OrbStyle과 이름·기본값이 같습니다) ----
+  const GROUPS = [
+    { title: "형태", items: [
+      { k: "pointCount", label: "점 개수", hint: "많을수록 촘촘합니다", min: 200, max: 2000, step: 50, def: 900, int: true },
+      { k: "radiusRatio", label: "구 크기", hint: "320dp 영역 대비 반지름", min: 0.4, max: 0.95, step: 0.01, def: 0.72 },
+      { k: "tiltDeg", label: "기울기", hint: "앞으로 숙인 각도", min: -60, max: 60, step: 1, def: 20, unit: "°" },
+    ]},
+    { title: "색", items: [
+      { k: "colorA", label: "오른쪽 위 색", color: true, def: "#9CC8FF" },
+      { k: "colorB", label: "왼쪽 아래 색", color: true, def: "#9A8CF5" },
+    ]},
+    { title: "점", items: [
+      { k: "dotBackDp", label: "뒤쪽 점 크기", hint: "반지름", min: 0.2, max: 4, step: 0.1, def: 0.7, unit: "dp" },
+      { k: "dotFrontDp", label: "앞쪽 점 크기", hint: "반지름", min: 0.2, max: 5, step: 0.1, def: 2.0, unit: "dp" },
+      { k: "dotTalkDp", label: "말할 때 점 커짐", hint: "최대 소리 기준", min: 0, max: 3, step: 0.1, def: 0.6, unit: "dp" },
+      { k: "alphaBack", label: "뒤쪽 점 진하기", min: 0, max: 1, step: 0.01, def: 0.18 },
+      { k: "alphaFront", label: "앞쪽 점 진하기", min: 0, max: 1, step: 0.01, def: 0.88 },
+      { k: "alphaTalk", label: "말할 때 밝아짐", hint: "최대 소리 기준", min: 0, max: 0.5, step: 0.01, def: 0.15 },
+    ]},
+    { title: "회전", items: [
+      { k: "idleSpinDeg", label: "조용할 때 회전", min: 0, max: 90, step: 0.5, def: 12.6, unit: "°/초" },
+      { k: "talkSpinDeg", label: "말할 때 더해지는 회전", hint: "최대 소리 기준", min: 0, max: 180, step: 0.5, def: 28.6, unit: "°/초" },
+    ]},
+    { title: "출렁임", items: [
+      { k: "idleWobble", label: "조용할 때 출렁임", hint: "반지름 대비", min: 0, max: 0.2, step: 0.005, def: 0.035 },
+      { k: "talkWobble", label: "말할 때 출렁임", hint: "최대 소리 기준, 반지름 대비", min: 0, max: 0.6, step: 0.01, def: 0.22 },
+      { k: "talkSwell", label: "말할 때 부풀기", hint: "최대 소리 기준", min: 0, max: 0.4, step: 0.01, def: 0.12 },
+      { k: "waveSpeed", label: "물결 속도", min: 0, max: 4, step: 0.05, def: 1 },
+      { k: "talkWaveBoost", label: "말할 때 물결 빨라짐", hint: "최대 소리일 때 더해지는 배수", min: 0, max: 6, step: 0.1, def: 2.5 },
+      { k: "focusAngleDeg", label: "더 출렁일 방향", hint: "0 오른쪽 · 90 위 · 180 왼쪽 · 270 아래", min: 0, max: 359, step: 1, def: 180, unit: "°" },
+      { k: "focusStrength", label: "방향 쏠림", hint: "0이면 고르게 출렁입니다", min: 0, max: 1, step: 0.01, def: 0 },
+    ]},
+    { title: "반응 속도", items: [
+      { k: "attackSec", label: "말 시작 반응", hint: "소리를 따라 커지는 시간", min: 0.01, max: 1, step: 0.01, def: 0.07, unit: "초" },
+      { k: "releaseSec", label: "말 끝난 뒤 가라앉기", hint: "원래대로 돌아가는 시간", min: 0.05, max: 3, step: 0.05, def: 0.3, unit: "초" },
+    ]},
+  ];
+  // 마이크 감도는 기기마다 달라 개발자가 차량에서 재서 정합니다.
+  // 여기서는 앱 기본 기준(-60~0dB)으로 고정합니다.
+  const SILENCE_DB = -60, LOUD_DB = 0;
+  const ITEMS = GROUPS.flatMap(g => g.items);
+  const DEF = Object.fromEntries(ITEMS.map(i => [i.k, i.def]));
+  const STORE_KEY = "pleos-orb-style-v1";
+
+  let style = { ...DEF };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved) for (const i of ITEMS) if (saved[i.k] !== undefined) style[i.k] = saved[i.k];
+  } catch (e) {}
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(style)); } catch (e) {} }
+
+  const decimals = step => (String(step).split(".")[1] || "").length;
+  const fmt = (i, v) => i.color ? v.toUpperCase() : Number(v).toFixed(decimals(i.step)) + (i.unit ? " " + i.unit : "");
+
+  // ---- 조절 패널 만들기 ----
+  const panel = document.getElementById("panel");
+  const exportBox = panel.firstElementChild;
+  const rows = {};
+  for (const g of GROUPS) {
+    const sec = document.createElement("section");
+    sec.className = "group";
+    const h = document.createElement("h2"); h.textContent = g.title; sec.appendChild(h);
+    for (const i of g.items) {
+      const row = document.createElement("div");
+      row.className = "row" + (i.color ? " color-row" : "");
+      const id = "p-" + i.k;
+      const label = document.createElement("label");
+      label.htmlFor = id;
+      const name = document.createElement("span");
+      name.textContent = i.label;
+      if (i.hint) { const hint = document.createElement("span"); hint.className = "hint"; hint.textContent = i.hint; name.appendChild(hint); }
+      label.appendChild(name);
+      row.appendChild(label);
+      let input, val;
+      if (i.color) {
+        val = document.createElement("span"); val.className = "val";
+        const code = document.createElement("span");
+        input = document.createElement("input"); input.type = "color"; input.id = id; input.value = style[i.k];
+        val.append(code, input);
+        row.appendChild(val);
+        rows[i.k] = { row, input, text: code, item: i };
+      } else {
+        val = document.createElement("button"); val.className = "val"; val.type = "button"; val.title = "기본값으로";
+        input = document.createElement("input"); input.type = "range"; input.id = id;
+        input.min = i.min; input.max = i.max; input.step = i.step; input.value = style[i.k];
+        val.addEventListener("click", () => setValue(i.k, i.def));
+        row.append(val, input);
+        rows[i.k] = { row, input, text: val, item: i };
+      }
+      input.addEventListener("input", () => setValue(i.k, i.color ? input.value : Number(input.value)));
+      sec.appendChild(row);
+    }
+    panel.insertBefore(sec, exportBox);
+  }
+
+  function refreshRow(k) {
+    const r = rows[k];
+    r.input.value = style[k];
+    r.text.textContent = fmt(r.item, style[k]);
+    r.row.classList.toggle("changed", String(style[k]).toUpperCase() !== String(DEF[k]).toUpperCase());
+  }
+  function setValue(k, v) {
+    style[k] = v;
+    if (k === "pointCount") buildPoints(v);
+    refreshRow(k);
+    renderCode();
+    save();
+  }
+
+  // ---- Kotlin 코드 만들기 ----
+  const codeEl = document.getElementById("code");
+  function renderCode() {
+    const lines = ITEMS.map(i => {
+      const v = style[i.k];
+      let s;
+      if (i.color) s = `Color.parseColor("${v.toUpperCase()}")`;
+      else if (i.int) s = String(Math.round(v));
+      else s = Number(v).toFixed(decimals(i.step)) + "f";
+      return `    ${i.k} = ${s},`;
+    });
+    codeEl.textContent = "val AppOrbStyle = OrbStyle(\n" + lines.join("\n") + "\n)";
+  }
+
+  const toast = document.getElementById("toast");
+  let toastTimer;
+  function say(msg) { toast.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.textContent = "", 2500); }
+  document.getElementById("copy").addEventListener("click", () => {
+    const text = codeEl.textContent;
+    const fallback = () => {
+      const range = document.createRange(); range.selectNodeContents(codeEl);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      say("코드를 선택했습니다. ⌘C로 복사하세요.");
+    };
+    try {
+      navigator.clipboard.writeText(text).then(() => say("복사했습니다."), fallback);
+    } catch (e) { fallback(); }
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    for (const i of ITEMS) setValue(i.k, i.def);
+    say("기본값으로 되돌렸습니다.");
+  });
+
+  // ---- 구체 계산 (VoiceOrbView.onDraw와 같은 식) ----
+  let bx = new Float32Array(0), by = bx, bz = bx;
+  function buildPoints(n) {
+    n = Math.round(n);
+    bx = new Float32Array(n); by = new Float32Array(n); bz = new Float32Array(n);
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < n; i++) {
+      const y = 1 - 2 * (i + 0.5) / n, r = Math.sqrt(1 - y * y), t = golden * i;
+      bx[i] = Math.cos(t) * r; by[i] = y; bz[i] = Math.sin(t) * r;
+    }
+  }
+  buildPoints(style.pointCount);
+
+  const CAMERA = 3.2, VIEW_DP = 320;
+  const orb = document.getElementById("orb");
+  const ctx = orb.getContext("2d");
+  let targetLevel = 0, level = 0, spin = 0, wave = 0, last = performance.now(), paused = false;
+  const hexToRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const rad = d => d * Math.PI / 180;
+
+  function fitCanvas(c) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.round(c.clientWidth * dpr), h = Math.round(c.clientHeight * dpr);
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    return dpr;
+  }
+
+  function frame(now) {
+    const dt = Math.min(Math.max((now - last) / 1000, 0), 0.1);
+    last = now;
+    const s = style;
+    const tau = targetLevel > level ? s.attackSec : s.releaseSec;
+    level += (targetLevel - level) * (1 - Math.exp(-dt / Math.max(tau, 0.001)));
+    if (!paused) {
+      spin += rad(s.idleSpinDeg + level * s.talkSpinDeg) * dt;
+      wave += s.waveSpeed * (1 + level * s.talkWaveBoost) * dt;
+    }
+
+    const dpr = fitCanvas(orb);
+    const W = orb.width, H = orb.height;
+    const density = (orb.clientWidth / VIEW_DP) * dpr; // 1dp가 화면에서 차지하는 픽셀
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2, radius = Math.min(W, H) / 2 * s.radiusRatio;
+    const wobble = s.idleWobble + level * s.talkWobble, swell = 1 + level * s.talkSwell;
+    const cosY = Math.cos(spin), sinY = Math.sin(spin);
+    const tilt = rad(s.tiltDeg), cosX = Math.cos(tilt), sinX = Math.sin(tilt);
+    const fx = Math.cos(rad(s.focusAngleDeg)), fy = Math.sin(rad(s.focusAngleDeg));
+    const A = hexToRgb(s.colorA), B = hexToRgb(s.colorB), tw = wave;
+
+    for (let i = 0; i < bx.length; i++) {
+      const X = bx[i], Y = by[i], Z = bz[i];
+      const x = X * cosY + Z * sinY;
+      const z0 = -X * sinY + Z * cosY;
+      const y = Y * cosX - z0 * sinX;
+      const z = Y * sinX + z0 * cosX;
+      const noise = 0.45 * Math.sin(3 * X + tw * 1.3) + 0.35 * Math.sin(4 * Y - tw * 1.1 + 1) +
+        0.30 * Math.sin(5 * Z + tw * 1.7 + 2) + 0.20 * Math.sin(2 * (X + Y) - tw * 0.8);
+      const weight = Math.max(0, 1 + s.focusStrength * (x * fx + y * fy));
+      const d = swell * (1 + wobble * noise * weight);
+      const px = x * d, py = y * d, pz = z * d;
+      const per = CAMERA / (CAMERA - pz);
+      const sx = cx + px * radius * per, sy = cy - py * radius * per;
+      const depth = Math.min(1, Math.max(0, (pz + 1) / 2));
+      const size = (s.dotBackDp + depth * (s.dotFrontDp - s.dotBackDp) + level * s.dotTalkDp) * density * per;
+      const alpha = Math.min(1, Math.max(0, s.alphaBack + depth * (s.alphaFront - s.alphaBack) + level * s.alphaTalk));
+      const mix = Math.min(1, Math.max(0, (1 - ((sx - cx) - (sy - cy)) / radius) / 2));
+      const r = Math.trunc(A[0] + (B[0] - A[0]) * mix), g = Math.trunc(A[1] + (B[1] - A[1]) * mix), b = Math.trunc(A[2] + (B[2] - A[2]) * mix);
+      ctx.fillStyle = `rgba(${r},${g},${b},${Math.trunc(alpha * 255) / 255})`;
+      ctx.beginPath(); ctx.arc(sx, sy, Math.max(size, 0.01), 0, Math.PI * 2); ctx.fill();
+    }
+    drawMeter();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- 입력 크기 기록 (최근 4초, dB) ----
+  // 막대는 실제 소리 크기(-80~0dB)입니다. -60dB 아래 막대는 흐리게 그려 구체가 반응하지 않는다는 뜻입니다.
+  const meter = document.getElementById("meter"), mctx = meter.getContext("2d"), lv = document.getElementById("lv");
+  const METER_MIN_DB = -80;
+  const history = new Array(40).fill(-96);
+  function mapDb(db) {
+    return Math.min(1, Math.max(0, (db - SILENCE_DB) / (LOUD_DB - SILENCE_DB)));
+  }
+  function feedDb(db) {
+    targetLevel = mapDb(db);
+    history.push(db); history.shift();
+    lv.textContent = Math.max(-96, db).toFixed(0) + "dB → " + targetLevel.toFixed(2);
+  }
+  function drawMeter() {
+    const dpr = fitCanvas(meter), W = meter.width, H = meter.height;
+    mctx.clearRect(0, 0, W, H);
+    const yOf = db => H - Math.min(1, Math.max(0, (db - METER_MIN_DB) / -METER_MIN_DB)) * H;
+    const n = history.length, gap = 2 * dpr, bw = (W - gap * (n - 1)) / n;
+    for (let i = 0; i < n; i++) {
+      const db = history[i], top = Math.min(yOf(db), H - 2 * dpr);
+      const active = db > SILENCE_DB;
+      mctx.fillStyle = active ? (i === n - 1 ? "rgba(164,152,255,0.95)" : "rgba(164,152,255,0.6)") : "rgba(144,154,166,0.3)";
+      mctx.fillRect(i * (bw + gap), top, bw, H - top);
+    }
+  }
+
+  // ---- 소리 입력 방식 ----
+  let mode = "sim";
+  const modes = ["mic", "sim", "file", "hold", "quiet"];
+  function setMode(m) {
+    mode = m;
+    for (const x of modes) {
+      document.getElementById("m-" + x).setAttribute("aria-pressed", String(x === m));
+      document.getElementById("b-" + x).hidden = x !== m;
+    }
+    if (m !== "file") stopAudio();
+    if (m !== "mic") stopMic();
+  }
+  modes.forEach(m => document.getElementById("m-" + m).addEventListener("click", () => setMode(m)));
+
+  // 말하기 흉내: 문장(1.2~3초)과 쉼(0.6~1.6초)을 번갈아, 문장 안에서는 초당 5음절 정도로 오르내립니다.
+  let simT = 0, simUntil = 2, simTalking = true, sylBase = 0.6;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  function simStep() {
+    simT += 0.1;
+    if (simT >= simUntil) { simTalking = !simTalking; simT = 0; simUntil = simTalking ? rand(1.2, 3) : rand(0.6, 1.6); }
+    if (!simTalking) return rand(0.02, 0.08);
+    if (Math.random() < 0.5) sylBase = rand(0.45, 0.78);
+    return sylBase * (0.65 + 0.35 * Math.abs(Math.sin(Math.PI * simT * 5))) + rand(-0.04, 0.04);
+  }
+
+  const hold = document.getElementById("hold"), holdV = document.getElementById("hold-v");
+  hold.addEventListener("input", () => holdV.textContent = Number(hold.value).toFixed(2));
+
+  // 녹음 파일: 앱과 같은 방식(RMS → dBFS, -60~0dBFS를 0~1로)으로 0.1초마다 크기를 계산합니다.
+  let audioCtx = null, buffer = null, srcNode = null, analyser = null, samples = null, playing = false;
+  const fileInput = document.getElementById("file"), playBtn = document.getElementById("play"), fname = document.getElementById("fname");
+  document.getElementById("pick").addEventListener("click", () => {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    fileInput.click();
+  });
+  fileInput.addEventListener("change", async () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    if (!audioCtx) { fname.textContent = "이 브라우저에서는 오디오를 재생할 수 없습니다."; return; }
+    fname.textContent = f.name + " · 읽는 중";
+    try {
+      buffer = await audioCtx.decodeAudioData(await f.arrayBuffer());
+      fname.textContent = f.name + " · " + buffer.duration.toFixed(1) + "초, 반복 재생";
+      startAudio();
+    } catch (e) {
+      fname.textContent = "이 파일은 열 수 없습니다. mp3, m4a, wav 파일을 넣어 주세요.";
+      buffer = null; playBtn.hidden = true;
+    }
+  });
+  function startAudio() {
+    if (!buffer) return;
+    stopAudio();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    analyser = audioCtx.createAnalyser(); analyser.fftSize = 2048;
+    samples = new Float32Array(analyser.fftSize);
+    srcNode = audioCtx.createBufferSource(); srcNode.buffer = buffer; srcNode.loop = true;
+    srcNode.connect(analyser); analyser.connect(audioCtx.destination);
+    srcNode.start();
+    playing = true; playBtn.hidden = false; playBtn.textContent = "일시정지";
+  }
+  function stopAudio() {
+    if (srcNode) { try { srcNode.stop(); } catch (e) {} srcNode.disconnect(); srcNode = null; }
+    playing = false; playBtn.textContent = "재생";
+  }
+  playBtn.addEventListener("click", () => playing ? stopAudio() : startAudio());
+  // 앱의 reportLevel과 같은 식: RMS → dBFS. 0~1 변환은 '마이크 감도' 값으로 합니다.
+  function dbOf(an, buf) {
+    an.getFloatTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    const rms = Math.sqrt(sum / buf.length);
+    return rms > 0 ? Math.max(-96, 20 * Math.log10(rms)) : -96;
+  }
+  function fileDb() {
+    if (!playing || !analyser) return -96;
+    return dbOf(analyser, samples);
+  }
+
+  // 내 마이크: 브라우저의 자동 음량 보정·잡음 제거·에코 제거를 꺼서 앱(VOICE_RECOGNITION)과 비슷한 원음을 받습니다.
+  let micStream = null, micSrc = null, micAnalyser = null, micBuf = null;
+  const micBtn = document.getElementById("mic-btn"), micState = document.getElementById("mic-state");
+  async function startMic() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      micState.textContent = "이 화면에서는 마이크를 쓸 수 없습니다. 아래 안내대로 컴퓨터에서 직접 열어 주세요.";
+      return;
+    }
+    micState.textContent = "마이크 권한을 기다리는 중";
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      micSrc = audioCtx.createMediaStreamSource(micStream);
+      micAnalyser = audioCtx.createAnalyser(); micAnalyser.fftSize = 2048;
+      micBuf = new Float32Array(micAnalyser.fftSize);
+      micSrc.connect(micAnalyser); // 스피커로는 내보내지 않습니다 (하울링 방지)
+      const label = micStream.getAudioTracks()[0]?.label;
+      micState.textContent = "듣는 중" + (label ? " · " + label : "");
+      micBtn.textContent = "마이크 끄기";
+    } catch (e) {
+      stopMic();
+      micState.textContent = e && e.name === "NotAllowedError"
+        ? "마이크를 쓸 수 없습니다. 공유 링크에서는 막혀 있으니 컴퓨터에서 직접 열어 주세요. 직접 연 화면이라면 브라우저의 마이크 권한을 허용해 주세요."
+        : "마이크를 찾지 못했습니다. 연결된 마이크를 확인해 주세요.";
+    }
+  }
+  function stopMic() {
+    if (micSrc) { micSrc.disconnect(); micSrc = null; }
+    if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+    micAnalyser = null;
+    micBtn.textContent = "마이크 켜기";
+    if (micState.textContent.startsWith("듣는 중")) micState.textContent = "꺼짐";
+  }
+  micBtn.addEventListener("click", () => micStream ? stopMic() : startMic());
+  function micDb() { return micAnalyser ? dbOf(micAnalyser, micBuf) : -96; }
+
+  // 앱처럼 0.1초마다 입력 크기를 보냅니다.
+  setInterval(() => {
+    if (mode === "mic") feedDb(micDb());
+    else if (mode === "sim") feedDb(simStep() * 60 - 60); // 앱 기본 기준(-60~0dB)에서의 말소리 크기를 흉내 냅니다
+    else if (mode === "file") feedDb(fileDb());
+    else if (mode === "hold") feedDb(SILENCE_DB + Number(hold.value) * (LOUD_DB - SILENCE_DB));
+    else feedDb(-96);
+  }, 100);
+
+  // ---- 무대 토글 ----
+  function toggle(id, fn) {
+    const b = document.getElementById(id);
+    b.addEventListener("click", () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(on)); fn(on); });
+    return b;
+  }
+  toggle("t-captions", on => document.getElementById("captions").hidden = !on);
+  toggle("t-zoom", on => orb.style.setProperty("--orb-w", on ? "640px" : "320px"));
+  const pauseBtn = toggle("t-pause", on => paused = on);
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) { paused = true; pauseBtn.setAttribute("aria-pressed", "true"); }
+
+  ITEMS.forEach(i => refreshRow(i.k));
+  renderCode();
+  requestAnimationFrame(t => { last = t; frame(t); });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  디버그 빌드에서만: 설정·목소리 등록 화면을 adb로 바로 열어 디자인을 확인할 수 있게 합니다.
+  예: VoiceEnrollmentActivity를 문자열 extra preview=reading 으로 열기 (VoiceEnrollmentActivity.EXTRA_PREVIEW 참고)
+  출시 빌드에서는 두 화면 모두 앱 안에서만 열립니다.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <activity android:name=".SettingsActivity" android:exported="true" tools:replace="android:exported" />
+        <activity android:name=".VoiceEnrollmentActivity" android:exported="true" tools:replace="android:exported" />
+        <!-- 차량 상태 흉내 (DebugCarReceiver 참고) -->
+        <receiver android:name=".DebugCarReceiver" android:exported="true" />
+    </application>
+</manifest>

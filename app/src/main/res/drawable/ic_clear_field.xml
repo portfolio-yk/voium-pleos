@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 입력칸 지우기 (Figma 113:6479): 검은 원 안의 흰 X -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp" android:height="40dp" android:viewportWidth="40" android:viewportHeight="40">
+    <path android:fillColor="#131417" android:pathData="M20 4A16 16 0 1 1 20 36A16 16 0 1 1 20 4Z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M14.5 14.5L25.5 25.5M25.5 14.5L14.5 25.5" />
+</vector>

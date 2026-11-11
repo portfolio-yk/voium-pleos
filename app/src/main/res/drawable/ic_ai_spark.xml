@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AI 요약 아이콘 (✦, 26dp) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="26dp" android:height="26dp" android:viewportWidth="26" android:viewportHeight="26">
+    <path android:fillColor="#3D6BF0"
+        android:pathData="M13 2C13.9 8.2 17.8 12.1 24 13C17.8 13.9 13.9 17.8 13 24C12.1 17.8 8.2 13.9 2 13C8.2 12.1 12.1 8.2 13 2Z" />
+</vector>

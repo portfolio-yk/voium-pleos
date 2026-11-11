@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  모든 화면 위쪽의 상태 줄 (Figma status_row, x=120 y=48 폭 1460).
+  왼쪽: 상태 칩 · 대화종료 · 설정 · 도움말 · 주행 중, 오른쪽: 탑승 인원 칩. (Figma 217:4094, 120:3671)
+  대화종료·도움말·주행 중은 자막 화면에서만 보입니다. 모양은 StatusRow가 상태에 맞춰 바꿉니다.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/status_row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="120dp"
+    android:layout_marginTop="48dp"
+    android:layout_marginEnd="120dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <!-- 듣기 상태: 듣는 중(초록) / 자막 일시 정지(회색) -->
+    <LinearLayout
+        android:id="@+id/status_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_chip_listening"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp">
+
+        <ImageView
+            android:id="@+id/status_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_mic" />
+
+        <TextView
+            android:id="@+id/status_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/voium_listening_text"
+            tools:text="듣는 중" />
+    </LinearLayout>
+
+    <!-- 대화종료: 듣는 중·오류일 때만 -->
+    <LinearLayout
+        android:id="@+id/end_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_chip_outline"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_stop" />
+
+        <TextView
+            android:id="@+id/end_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/end_conversation" />
+    </LinearLayout>
+
+    <!-- 설정: 설정 화면에서는 검정으로 선택된 모양 -->
+    <LinearLayout
+        android:id="@+id/settings_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_chip_outline"
+        android:clickable="true"
+        android:contentDescription="@string/settings_title"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp">
+
+        <ImageView
+            android:id="@+id/settings_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_settings_cog" />
+
+        <TextView
+            android:id="@+id/settings_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:importantForAccessibility="no"
+            android:text="@string/settings_title" />
+    </LinearLayout>
+
+    <!-- 도움말 -->
+    <LinearLayout
+        android:id="@+id/help_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_chip_outline"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- Figma ic_help: 원 + 가운데 "?" 글자 -->
+        <FrameLayout
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_help_ring" />
+
+            <TextView
+                style="@style/Voium.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="\?"
+                android:textFontWeight="700"
+                android:textSize="18sp" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/help_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/help" />
+    </LinearLayout>
+
+    <!-- 대화 기록 (154:2082): 저장된 대화가 있을 때 -->
+    <LinearLayout
+        android:id="@+id/history_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_chip_outline"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_record" />
+
+        <TextView
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/history_title" />
+    </LinearLayout>
+
+    <!-- 주행 중: 기어가 P가 아니고 대기 중일 때 -->
+    <LinearLayout
+        android:id="@+id/driving_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_chip_driving"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="22dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="26dp"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_driving" />
+
+        <TextView
+            android:id="@+id/driving_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/voium_driving_text"
+            android:text="@string/driving" />
+    </LinearLayout>
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 탑승 인원 -->
+    <LinearLayout
+        android:id="@+id/passengers_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_chip_outline"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_people" />
+
+        <TextView
+            android:id="@+id/passengers_label"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            tools:text="탑승 3명" />
+    </LinearLayout>
+</LinearLayout>

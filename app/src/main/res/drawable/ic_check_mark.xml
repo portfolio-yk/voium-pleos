@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 체크 원(Figma ic_check)의 흰 체크 표시만. 원은 화자 색으로 코드에서 그립니다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2.66667" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M10 16.6667L14 20.6667L22 12" />
+</vector>

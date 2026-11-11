@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ivi_text_field Medium: 흰 바탕, 2dp 테두리, 모서리 24dp. 입력 중이면 테두리가 진해집니다(Figma 113:6479). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <solid android:color="@android:color/white" />
+            <stroke android:width="2dp" android:color="@color/voium_text_primary" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <solid android:color="@android:color/white" />
+            <stroke android:width="2dp" android:color="#1A131417" />
+        </shape>
+    </item>
+</selector>

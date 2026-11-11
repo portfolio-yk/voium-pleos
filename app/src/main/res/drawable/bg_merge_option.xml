@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 합치기 후보 한 줄 (211:4258): basic/100, 모서리 20dp -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14131417">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="20dp" />
+            <solid android:color="@color/voium_basic100" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 지난 문단 한 줄 (Figma previous_lines의 line): 화자 태그(160dp 칸) · 한 줄 자막 · 시각 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <FrameLayout
+        android:layout_width="160dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/speaker_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="6dp">
+
+            <View
+                android:id="@+id/speaker_tag_dot"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/speaker_tag_label"
+                style="@style/Voium.Text.BodySmallStrong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                tools:text="엄마" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 긴 문단은 끝부분(가장 최근에 한 말)이 보이도록 앞을 줄입니다. -->
+    <TextView
+        android:id="@+id/line_text"
+        style="@style/Voium.Text.CaptionLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:ellipsize="start"
+        android:maxWidth="790dp"
+        android:singleLine="true"
+        tools:text="괜찮다, 바람 좋네" />
+
+    <TextView
+        android:id="@+id/line_time"
+        style="@style/Voium.Text.BodySmallStrong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/voium_text_quaternary"
+        tools:text="오후 12:41" />
+</LinearLayout>

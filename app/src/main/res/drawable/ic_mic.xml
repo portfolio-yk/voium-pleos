@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma C2 status_row "듣는 중" 아이콘 (45:4099). 색은 상태에 따라 코드에서 바꿉니다(imageTintList). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:fillColor="#0E7A58" android:pathData="M20 8C20 5.79086 18.2091 4 16 4C13.7909 4 12 5.79086 12 8V14.6667C12 16.8758 13.7909 18.6667 16 18.6667C18.2091 18.6667 20 16.8758 20 14.6667V8Z" />
+    <path android:strokeColor="#0E7A58" android:strokeWidth="2" android:strokeLineCap="round"
+        android:pathData="M6.66667 14.6667C6.66667 17.142 7.65 19.516 9.40034 21.2663C11.1507 23.0167 13.5246 24 16 24M16 24C18.4754 24 20.8493 23.0167 22.5997 21.2663C24.35 19.516 25.3333 17.142 25.3333 14.6667M16 24V28" />
+</vector>

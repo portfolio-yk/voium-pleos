@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma "chip_state/마이크를 쓸 수 없어요": 빨강 14% -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="999dp" />
+    <solid android:color="@color/voium_error_chip_bg" />
+    <stroke android:width="2dp" android:color="@android:color/transparent" />
+</shape>

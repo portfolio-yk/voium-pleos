@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 목소리 등록 동의 안내 자물쇠 (32dp) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:strokeColor="#52131417" android:strokeWidth="2" android:strokeLineJoin="round"
+        android:pathData="M9 14H23A2 2 0 0 1 25 16V25A2 2 0 0 1 23 27H9A2 2 0 0 1 7 25V16A2 2 0 0 1 9 14Z" />
+    <path android:strokeColor="#52131417" android:strokeWidth="2" android:strokeLineCap="round"
+        android:pathData="M11 14V10.5A5 5 0 0 1 21 10.5V14" />
+</vector>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 마이크 오류 화면의 원 (217:4198): 빨강 12% -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#1FE0453A" />
+</shape>

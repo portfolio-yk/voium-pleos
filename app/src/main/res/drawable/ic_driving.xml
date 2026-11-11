@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma "ic_driving" (217:4105): 주행 중 칩 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:strokeColor="#8A6200" android:strokeWidth="2.4" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M6.66667 21.3333V14.6667M6.66667 21.3333H25.3333M6.66667 21.3333V24M6.66667 14.6667L9.33333 8H22.6667L25.3333 14.6667M6.66667 14.6667H4M6.66667 14.6667H25.3333M25.3333 14.6667V21.3333M25.3333 14.6667H28M25.3333 21.3333V24" />
+</vector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma C2 speaker_pill의 흰 점 (45:4123) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#FFFFFF" />
+    <size android:width="14dp" android:height="14dp" />
+</shape>

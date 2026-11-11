@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 운전대 ★ 버튼 안내 아이콘 (217:4118) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="52dp" android:height="52dp" android:viewportWidth="52" android:viewportHeight="52">
+    <path android:fillColor="#ECEEF1" android:strokeColor="#C9CDD4" android:strokeWidth="2"
+        android:pathData="M12 1H40A11 11 0 0 1 51 12V40A11 11 0 0 1 40 51H12A11 11 0 0 1 1 40V12A11 11 0 0 1 12 1Z" />
+    <path android:fillColor="#454950"
+        android:pathData="M26 13L28.9187 21.9828H38.3637L30.7225 27.5344L33.6412 36.5172L26 30.9656L18.3588 36.5172L21.2775 27.5344L13.6363 21.9828H23.0813L26 13Z" />
+</vector>

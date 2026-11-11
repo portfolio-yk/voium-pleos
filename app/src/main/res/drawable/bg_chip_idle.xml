@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma "chip_state/대기 중": 회색 14% (자막 일시 정지·연결 중도 같은 모양) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14131417">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <solid android:color="@color/voium_idle_chip_bg" />
+            <stroke android:width="2dp" android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</ripple>

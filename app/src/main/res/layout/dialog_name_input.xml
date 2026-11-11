@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 이름 입력칸과 그 아래 오류 안내 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/name_input"
+        style="@style/Voium.Text.TitleSmallStrong"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input"
+        android:hint="@string/profile_name_hint"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        android:paddingStart="28dp"
+        android:paddingTop="26dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="26dp"
+        android:singleLine="true"
+        android:textColorHint="@color/voium_text_partial" />
+
+    <TextView
+        android:id="@+id/name_error"
+        style="@style/Voium.Text.BodySmallStrong"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:accessibilityLiveRegion="polite"
+        android:paddingHorizontal="8dp"
+        android:textColor="@color/voium_error"
+        android:visibility="gone"
+        tools:text="같은 이름의 프로필이 이미 있어요."
+        tools:visibility="visible" />
+</LinearLayout>

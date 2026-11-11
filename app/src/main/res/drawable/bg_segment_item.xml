@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 밝기 고르기 한 칸: 고르면 흰 알약 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
+    <item>
+        <ripple android:color="#14131417">
+            <item android:id="@android:id/mask"><shape><corners android:radius="999dp" /><solid android:color="#FFFFFFFF" /></shape></item>
+        </ripple>
+    </item>
+</selector>

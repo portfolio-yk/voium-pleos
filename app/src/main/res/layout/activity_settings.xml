@@ -1,0 +1,1271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  설정 시트 (Figma Design 영역: 113:1421 프로필 목록, 113:3087 빈 상태, 113:4785 상세, 113:6479 이름 입력,
+  113:11565 주행 중, 117:1872 앰비언트, 117:8507 데이터 관리, 117:10121 마이크 권한, 117:11750 개인정보 처리방침).
+  자막 화면 위에 어둡게 덮고 가운데 1500×900 시트를 띄웁니다.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/voium_dim">
+
+    <FrameLayout
+        android:id="@+id/sheet"
+        android:layout_width="1500dp"
+        android:layout_height="900dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_sheet"
+        android:clickable="true"
+        android:elevation="24dp"
+        android:focusable="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- sheet_header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="48dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="20dp">
+
+                <TextView
+                    style="@style/Voium.Text.TitleLargeStrong"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:accessibilityHeading="true"
+                    android:text="@string/settings_title" />
+
+                <FrameLayout
+                    android:id="@+id/settings_close"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_circle_basic"
+                    android:clickable="true"
+                    android:contentDescription="@string/close"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_close_large" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/voium_divider" />
+
+            <!-- sheet_body -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:paddingHorizontal="48dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="28dp">
+
+                <!-- nav -->
+                <LinearLayout
+                    android:layout_width="320dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/nav_profiles"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:background="@drawable/bg_nav_item"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="28dp"
+                        android:text="@string/settings_profiles" />
+
+                    <TextView
+                        android:id="@+id/nav_ambient"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_nav_item"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="28dp"
+                        android:text="@string/ambient_light" />
+
+                    <TextView
+                        android:id="@+id/nav_history"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_nav_item"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="28dp"
+                        android:text="@string/history_title" />
+
+                    <TextView
+                        android:id="@+id/nav_data"
+                        style="@style/Voium.Text.BodyLargeStrong"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_nav_item"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="28dp"
+                        android:text="@string/settings_data" />
+                </LinearLayout>
+
+                <!-- content: 패널 하나와 아래 안내(footnote) -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="48dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1">
+
+                        <!-- ============================== 프로필 목록 -->
+                        <LinearLayout
+                            android:id="@+id/panel_profiles"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        style="@style/Voium.Text.TitleLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:accessibilityHeading="true"
+                                        android:text="@string/settings_profiles" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLarge"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="6dp"
+                                        android:text="@string/profiles_description"
+                                        android:textColor="@color/voium_text_secondary" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/add_profile_button"
+                                    style="@style/Voium.Text.BodyLargeStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="80dp"
+                                    android:layout_marginStart="16dp"
+                                    android:background="@drawable/bg_button_basic_medium"
+                                    android:gravity="center"
+                                    android:minWidth="120dp"
+                                    android:paddingHorizontal="32dp"
+                                    android:text="@string/profile_add" />
+                            </LinearLayout>
+
+                            <!-- 주행 중 안내 (113:13183) -->
+                            <LinearLayout
+                                android:id="@+id/driving_banner"
+                                android:layout_width="match_parent"
+                                android:layout_height="72dp"
+                                android:layout_marginTop="32dp"
+                                android:background="@drawable/bg_driving_banner"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="28dp"
+                                android:visibility="gone"
+                                tools:visibility="visible">
+
+                                <ImageView
+                                    android:layout_width="34dp"
+                                    android:layout_height="34dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_driving_small" />
+
+                                <TextView
+                                    style="@style/Voium.Text.BodyMediumStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
+                                    android:text="@string/profiles_driving_banner"
+                                    android:textColor="@color/voium_driving_text" />
+                            </LinearLayout>
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="32dp">
+
+                                <ScrollView
+                                    android:id="@+id/profile_scroll"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:overScrollMode="never"
+                                    android:scrollbars="none">
+
+                                    <!-- 2열 카드 격자 (코드에서 두 장씩 한 줄로 채웁니다) -->
+                                    <LinearLayout
+                                        android:id="@+id/profile_grid"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical" />
+                                </ScrollView>
+
+                                <!-- 빈 상태 (113:3087) -->
+                                <LinearLayout
+                                    android:id="@+id/profiles_empty"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:orientation="vertical"
+                                    android:visibility="gone">
+
+                                    <com.example.pleos.VoiceOrbView
+                                        android:id="@+id/empty_orb"
+                                        android:layout_width="132dp"
+                                        android:layout_height="132dp"
+                                        android:importantForAccessibility="no" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.TitleMediumStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="8dp"
+                                        android:text="@string/profiles_empty_title" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLarge"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="12dp"
+                                        android:gravity="center"
+                                        android:text="@string/profiles_empty_description"
+                                        android:textColor="@color/voium_text_secondary" />
+
+                                    <TextView
+                                        android:id="@+id/first_profile_button"
+                                        style="@style/Voium.Text.BodyLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="80dp"
+                                        android:layout_marginTop="16dp"
+                                        android:background="@drawable/bg_button_filled_medium"
+                                        android:gravity="center"
+                                        android:paddingHorizontal="32dp"
+                                        android:text="@string/profiles_empty_button"
+                                        android:textColor="@android:color/white" />
+                                </LinearLayout>
+                            </FrameLayout>
+                        </LinearLayout>
+
+                        <!-- ============================== 프로필 상세 (113:6356) -->
+                        <LinearLayout
+                            android:id="@+id/panel_detail"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/detail_back"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="@string/back"
+                                    android:src="@drawable/ic_back" />
+
+                                <TextView
+                                    android:id="@+id/detail_title"
+                                    style="@style/Voium.Text.TitleLargeStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
+                                    android:accessibilityHeading="true"
+                                    tools:text="엄마" />
+                            </LinearLayout>
+
+                            <ScrollView
+                                android:id="@+id/detail_scroll"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="32dp"
+                                android:fillViewport="true"
+                                android:overScrollMode="never"
+                                android:scrollbars="none">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/bg_profile_card_28"
+                                    android:orientation="vertical"
+                                    android:paddingHorizontal="40dp"
+                                    android:paddingTop="32dp"
+                                    android:paddingBottom="28dp">
+
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            android:id="@+id/detail_avatar"
+                                            style="@style/Voium.Text.TitleLargeStrong"
+                                            android:layout_width="80dp"
+                                            android:layout_height="80dp"
+                                            android:gravity="center"
+                                            android:importantForAccessibility="no"
+                                            android:textColor="@android:color/white"
+                                            tools:text="엄" />
+
+                                        <TextView
+                                            android:id="@+id/detail_name"
+                                            style="@style/Voium.Text.TitleLargeStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="24dp"
+                                            tools:text="엄마" />
+                                    </LinearLayout>
+
+                                    <!-- row_이름 -->
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="100dp"
+                                        android:layout_marginTop="30dp"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="130dp"
+                                            android:layout_height="wrap_content"
+                                            android:labelFor="@id/detail_name_input"
+                                            android:text="@string/profile_field_name"
+                                            android:textColor="@color/voium_text_secondary" />
+
+                                        <FrameLayout
+                                            android:layout_width="0dp"
+                                            android:layout_height="match_parent"
+                                            android:layout_marginStart="20dp"
+                                            android:layout_weight="1">
+
+                                            <EditText
+                                                android:id="@+id/detail_name_input"
+                                                style="@style/Voium.Text"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="match_parent"
+                                                android:background="@drawable/bg_text_field"
+                                                android:imeOptions="actionDone"
+                                                android:inputType="text"
+                                                android:paddingStart="32dp"
+                                                android:paddingEnd="80dp"
+                                                android:singleLine="true"
+                                                android:textFontWeight="400"
+                                                android:textSize="36sp" />
+
+                                            <ImageView
+                                                android:id="@+id/detail_name_clear"
+                                                android:layout_width="56dp"
+                                                android:layout_height="56dp"
+                                                android:layout_gravity="end|center_vertical"
+                                                android:layout_marginEnd="16dp"
+                                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                                android:contentDescription="@string/clear_text"
+                                                android:padding="8dp"
+                                                android:src="@drawable/ic_clear_field"
+                                                android:visibility="gone" />
+                                        </FrameLayout>
+                                    </LinearLayout>
+
+                                    <TextView
+                                        android:id="@+id/detail_name_error"
+                                        style="@style/Voium.Text.BodySmallStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="150dp"
+                                        android:layout_marginTop="8dp"
+                                        android:accessibilityLiveRegion="polite"
+                                        android:textColor="@color/voium_danger"
+                                        android:visibility="gone" />
+
+                                    <!-- row_색 -->
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="68dp"
+                                        android:layout_marginTop="30dp"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="130dp"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/profile_field_color"
+                                            android:textColor="@color/voium_text_secondary" />
+
+                                        <LinearLayout
+                                            android:id="@+id/detail_swatches"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="match_parent"
+                                            android:layout_marginStart="20dp"
+                                            android:gravity="center_vertical"
+                                            android:orientation="horizontal" />
+                                    </LinearLayout>
+
+                                    <!-- row_목소리 -->
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="30dp"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="130dp"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/profile_field_voice"
+                                            android:textColor="@color/voium_text_secondary" />
+
+                                        <LinearLayout
+                                            android:layout_width="0dp"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="20dp"
+                                            android:layout_weight="1"
+                                            android:background="@drawable/bg_voice_box"
+                                            android:gravity="center_vertical"
+                                            android:minHeight="92dp"
+                                            android:orientation="horizontal"
+                                            android:paddingStart="24dp"
+                                            android:paddingTop="14dp"
+                                            android:paddingEnd="16dp"
+                                            android:paddingBottom="14dp">
+
+                                            <com.example.pleos.VoiceOrbView
+                                                android:id="@+id/detail_voice_orb"
+                                                android:layout_width="56dp"
+                                                android:layout_height="56dp"
+                                                android:importantForAccessibility="no" />
+
+                                            <LinearLayout
+                                                android:layout_width="0dp"
+                                                android:layout_height="wrap_content"
+                                                android:layout_marginStart="20dp"
+                                                android:layout_weight="1"
+                                                android:orientation="vertical">
+
+                                                <TextView
+                                                    android:id="@+id/detail_voice_title"
+                                                    style="@style/Voium.Text.BodyLargeStrong"
+                                                    android:layout_width="wrap_content"
+                                                    android:layout_height="wrap_content"
+                                                    tools:text="등록됨" />
+
+                                                <TextView
+                                                    android:id="@+id/detail_voice_detail"
+                                                    style="@style/Voium.Text.BodySmallStrong"
+                                                    android:layout_width="wrap_content"
+                                                    android:layout_height="wrap_content"
+                                                    android:textColor="@color/voium_text_quaternary"
+                                                    tools:text="문장 3개 · 11월 2일" />
+                                            </LinearLayout>
+
+                                            <TextView
+                                                android:id="@+id/detail_reenroll"
+                                                style="@style/Voium.Text.BodySmallStrong"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="64dp"
+                                                android:background="@drawable/bg_button_filled_small"
+                                                android:gravity="center"
+                                                android:minWidth="100dp"
+                                                android:paddingHorizontal="24dp"
+                                                android:text="@string/profile_reenroll"
+                                                android:textColor="@android:color/white" />
+                                        </LinearLayout>
+                                    </LinearLayout>
+
+                                    <Space
+                                        android:layout_width="match_parent"
+                                        android:layout_height="0dp"
+                                        android:layout_weight="1"
+                                        android:minHeight="46dp" />
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="30dp"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/Voium.Text.BodySmallStrong"
+                                            android:layout_width="0dp"
+                                            android:layout_height="wrap_content"
+                                            android:layout_weight="1"
+                                            android:text="@string/profile_autosave"
+                                            android:textColor="@color/voium_text_quaternary" />
+
+                                        <LinearLayout
+                                            android:id="@+id/detail_delete"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:background="?android:attr/selectableItemBackground"
+                                            android:clickable="true"
+                                            android:focusable="true"
+                                            android:gravity="center_vertical"
+                                            android:orientation="horizontal"
+                                            android:padding="4dp">
+
+                                            <ImageView
+                                                android:layout_width="30dp"
+                                                android:layout_height="30dp"
+                                                android:importantForAccessibility="no"
+                                                android:src="@drawable/ic_trash" />
+
+                                            <TextView
+                                                style="@style/Voium.Text.BodyLargeStrong"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_marginStart="10dp"
+                                                android:text="@string/profile_delete"
+                                                android:textColor="@color/voium_danger" />
+                                        </LinearLayout>
+                                    </LinearLayout>
+                                </LinearLayout>
+                            </ScrollView>
+                        </LinearLayout>
+
+                        <!-- ============================== 사용자 지정 색 (설정 상세에서) -->
+                        <LinearLayout
+                            android:id="@+id/panel_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/color_back"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="@string/back"
+                                    android:src="@drawable/ic_back" />
+
+                                <TextView
+                                    style="@style/Voium.Text.TitleLargeStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
+                                    android:accessibilityHeading="true"
+                                    android:text="@string/color_picker_header" />
+                            </LinearLayout>
+
+                            <ScrollView
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_marginTop="24dp"
+                                android:layout_weight="1"
+                                android:overScrollMode="never"
+                                android:scrollbars="none">
+
+                                <include layout="@layout/include_color_picker" />
+                            </ScrollView>
+
+                            <TextView
+                                android:id="@+id/color_use"
+                                style="@style/Voium.Text.BodyLargeStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="80dp"
+                                android:layout_gravity="end"
+                                android:background="@drawable/bg_button_filled_medium"
+                                android:gravity="center"
+                                android:minWidth="120dp"
+                                android:paddingHorizontal="32dp"
+                                android:text="@string/color_picker_use"
+                                android:textColor="@android:color/white" />
+                        </LinearLayout>
+
+                        <!-- ============================== 앰비언트 라이트 (117:3443) -->
+                        <LinearLayout
+                            android:id="@+id/panel_ambient"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                style="@style/Voium.Text.TitleLargeStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:accessibilityHeading="true"
+                                android:text="@string/ambient_light" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLarge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/ambient_description"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="32dp"
+                                android:background="@drawable/bg_settings_list"
+                                android:orientation="vertical"
+                                android:padding="2dp">
+
+                                <!-- 연동 -->
+                                <LinearLayout
+                                    android:id="@+id/ambient_row"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="104dp"
+                                    android:background="@drawable/bg_settings_row"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="36dp"
+                                    android:paddingEnd="32dp">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/ambient_follow_speaker" />
+
+                                        <TextView
+                                            android:id="@+id/ambient_hint"
+                                            style="@style/Voium.Text.BodySmallStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="4dp"
+                                            android:textColor="@color/voium_text_quaternary" />
+                                    </LinearLayout>
+
+                                    <com.example.pleos.PillSwitchView
+                                        android:id="@+id/ambient_switch"
+                                        android:layout_width="80dp"
+                                        android:layout_height="48dp"
+                                        android:layout_marginStart="24dp"
+                                        android:importantForAccessibility="no" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="2dp"
+                                    android:background="@color/voium_divider" />
+
+                                <!-- 밝기 -->
+                                <LinearLayout
+                                    android:id="@+id/brightness_row"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="104dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="36dp"
+                                    android:paddingEnd="32dp">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:id="@+id/brightness_title"
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/ambient_brightness" />
+
+                                        <TextView
+                                            android:id="@+id/brightness_hint"
+                                            style="@style/Voium.Text.BodySmallStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="4dp"
+                                            android:text="@string/ambient_brightness_hint"
+                                            android:textColor="@color/voium_text_quaternary" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:id="@+id/brightness_segments"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="24dp"
+                                        android:background="@drawable/bg_segmented"
+                                        android:orientation="horizontal"
+                                        android:padding="6dp" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="2dp"
+                                    android:background="@color/voium_divider" />
+
+                                <!-- 조명 미리보기 -->
+                                <LinearLayout
+                                    android:id="@+id/preview_row"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="104dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="36dp"
+                                    android:paddingEnd="32dp">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:id="@+id/light_preview_title"
+                                            style="@style/Voium.Text.BodyLargeStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/ambient_preview" />
+
+                                        <TextView
+                                            android:id="@+id/light_preview_hint"
+                                            style="@style/Voium.Text.BodySmallStrong"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="4dp"
+                                            android:accessibilityLiveRegion="polite"
+                                            android:text="@string/ambient_preview_hint"
+                                            android:textColor="@color/voium_text_quaternary" />
+                                    </LinearLayout>
+
+                                    <TextView
+                                        android:id="@+id/light_preview_count"
+                                        style="@style/Voium.Text.BodyMediumStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="24dp"
+                                        android:textColor="@color/voium_text_secondary"
+                                        android:visibility="gone"
+                                        tools:text="2 / 3" />
+
+                                    <TextView
+                                        android:id="@+id/light_preview_button"
+                                        style="@style/Voium.Text.BodySmallStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="64dp"
+                                        android:layout_marginStart="12dp"
+                                        android:background="@drawable/bg_button_basic_small"
+                                        android:gravity="center"
+                                        android:minWidth="100dp"
+                                        android:paddingHorizontal="24dp"
+                                        android:text="@string/ambient_preview_start" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- ============================== 대화 기록 (153:1976 목록, 153:3631 저장 끔, 153:5284 빈 상태, 153:10232 주행 중) -->
+                        <LinearLayout
+                            android:id="@+id/panel_history"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                style="@style/Voium.Text.TitleLargeStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:accessibilityHeading="true"
+                                android:text="@string/history_title" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLarge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/history_description"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <LinearLayout
+                                android:id="@+id/history_toggle_row"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="32dp"
+                                android:background="@drawable/bg_settings_list"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="36dp"
+                                android:paddingTop="20dp"
+                                android:paddingEnd="32dp"
+                                android:paddingBottom="20dp">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/history_save" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodySmallStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="@string/history_save_hint"
+                                        android:textColor="@color/voium_text_quaternary" />
+                                </LinearLayout>
+
+                                <com.example.pleos.PillSwitchView
+                                    android:id="@+id/history_switch"
+                                    android:layout_width="80dp"
+                                    android:layout_height="48dp"
+                                    android:layout_marginStart="24dp"
+                                    android:importantForAccessibility="no" />
+                            </LinearLayout>
+
+                            <!-- 저장 끔 안내 또는 주행 중 안내 -->
+                            <TextView
+                                android:id="@+id/history_notice"
+                                style="@style/Voium.Text.BodyMediumStrong"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:background="@drawable/bg_voice_box"
+                                android:paddingHorizontal="24dp"
+                                android:paddingVertical="16dp"
+                                android:visibility="gone"
+                                tools:text="@string/history_off_notice"
+                                tools:visibility="visible" />
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="16dp">
+
+                                <ScrollView
+                                    android:id="@+id/history_scroll"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:overScrollMode="never"
+                                    android:scrollbars="none">
+
+                                    <LinearLayout
+                                        android:id="@+id/history_list"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical" />
+                                </ScrollView>
+
+                                <LinearLayout
+                                    android:id="@+id/history_empty"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:orientation="vertical"
+                                    android:visibility="gone">
+
+                                    <TextView
+                                        style="@style/Voium.Text.TitleMediumStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/history_empty_title" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLarge"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="12dp"
+                                        android:text="@string/history_empty_description"
+                                        android:textColor="@color/voium_text_secondary" />
+                                </LinearLayout>
+                            </FrameLayout>
+                        </LinearLayout>
+
+                        <!-- ============================== 대화 기록 상세 (153:6886, 173:1915) -->
+                        <LinearLayout
+                            android:id="@+id/panel_history_detail"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/record_back"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="@string/back"
+                                    android:src="@drawable/ic_back" />
+
+                                <TextView
+                                    android:id="@+id/record_title"
+                                    style="@style/Voium.Text.TitleLargeStrong"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
+                                    android:layout_weight="1"
+                                    android:accessibilityHeading="true"
+                                    android:ellipsize="end"
+                                    android:singleLine="true"
+                                    tools:text="오늘 · 오후 12:30 – 오후 2:05" />
+
+                                <LinearLayout
+                                    android:id="@+id/record_delete"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="?android:attr/selectableItemBackground"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:padding="4dp">
+
+                                    <ImageView
+                                        android:layout_width="30dp"
+                                        android:layout_height="30dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_trash" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="10dp"
+                                        android:text="@string/history_delete"
+                                        android:textColor="@color/voium_danger" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/record_meta"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="24dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal" />
+
+                            <ScrollView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="24dp"
+                                android:overScrollMode="never"
+                                android:scrollbars="none">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <!-- ai_summary -->
+                                    <LinearLayout
+                                        android:id="@+id/record_summary"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@drawable/bg_ai_summary"
+                                        android:orientation="vertical"
+                                        android:paddingHorizontal="32dp"
+                                        android:paddingVertical="26dp" />
+
+                                    <!-- transcript -->
+                                    <LinearLayout
+                                        android:id="@+id/record_transcript"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="32dp"
+                                        android:background="@drawable/bg_panel_basic"
+                                        android:orientation="vertical"
+                                        android:paddingHorizontal="32dp"
+                                        android:paddingVertical="24dp" />
+                                </LinearLayout>
+                            </ScrollView>
+                        </LinearLayout>
+
+                        <!-- ============================== 데이터 관리 (117:10078) -->
+                        <LinearLayout
+                            android:id="@+id/panel_data"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                style="@style/Voium.Text.TitleLargeStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:accessibilityHeading="true"
+                                android:text="@string/settings_data" />
+
+                            <TextView
+                                style="@style/Voium.Text.BodyLarge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="@string/data_description"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <LinearLayout
+                                android:id="@+id/data_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="20dp"
+                                android:background="@drawable/bg_settings_list"
+                                android:orientation="vertical"
+                                android:padding="2dp" />
+                        </LinearLayout>
+
+                        <!-- ============================== 마이크 권한 (117:10121) -->
+                        <LinearLayout
+                            android:id="@+id/panel_mic"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="52dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/mic_back"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="@string/back"
+                                    android:src="@drawable/ic_back" />
+
+                                <TextView
+                                    style="@style/Voium.Text.TitleLargeStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="16dp"
+                                    android:accessibilityHeading="true"
+                                    android:text="@string/data_mic" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/mic_status_box"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="24dp"
+                                android:background="@drawable/bg_permission_ok"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="36dp"
+                                android:paddingTop="20dp"
+                                android:paddingEnd="32dp"
+                                android:paddingBottom="20dp">
+
+                                <ImageView
+                                    android:id="@+id/mic_status_icon"
+                                    android:layout_width="36dp"
+                                    android:layout_height="36dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_mic" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="20dp"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/mic_status_title"
+                                        style="@style/Voium.Text.BodyLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/voium_listening_text"
+                                        tools:text="허용됨" />
+
+                                    <TextView
+                                        android:id="@+id/mic_status_detail"
+                                        style="@style/Voium.Text.BodyMediumStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:textColor="@color/voium_text_secondary"
+                                        android:textFontWeight="400"
+                                        tools:text="보이음이 차량 마이크를 사용할 수 있습니다." />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/mic_settings_button"
+                                    style="@style/Voium.Text.BodySmallStrong"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="64dp"
+                                    android:layout_marginStart="24dp"
+                                    android:background="@drawable/bg_button_basic_small"
+                                    android:gravity="center"
+                                    android:paddingHorizontal="24dp"
+                                    android:text="@string/mic_change_in_settings" />
+                            </LinearLayout>
+
+                            <TextView
+                                style="@style/Voium.Text.BodySmallStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="28dp"
+                                android:text="@string/mic_uses_title"
+                                android:textColor="@color/voium_text_secondary" />
+
+                            <LinearLayout
+                                android:id="@+id/mic_uses"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:paddingStart="28dp" />
+                        </LinearLayout>
+
+                        <!-- ============================== 개인정보 처리방침 (117:13321) -->
+                        <LinearLayout
+                            android:id="@+id/panel_privacy"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/privacy_back"
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="4dp"
+                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/back"
+                                android:src="@drawable/ic_back" />
+
+                            <ScrollView
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="16dp"
+                                android:layout_weight="1"
+                                android:overScrollMode="never"
+                                android:scrollbars="none">
+
+                                <LinearLayout
+                                    android:id="@+id/privacy_body"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        style="@style/Voium.Text.TitleLargeStrong"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:accessibilityHeading="true"
+                                        android:text="@string/data_privacy" />
+
+                                    <TextView
+                                        style="@style/Voium.Text.BodyLarge"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="6dp"
+                                        android:text="@string/privacy_effective"
+                                        android:textColor="@color/voium_text_secondary" />
+                                </LinearLayout>
+                            </ScrollView>
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- footnote -->
+                    <LinearLayout
+                        android:id="@+id/footnote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="32dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_info" />
+
+                        <TextView
+                            android:id="@+id/footnote_text"
+                            style="@style/Voium.Text.BodySmallStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textColor="@color/voium_text_quaternary" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ivi_toast_popup: "프로필을 삭제했습니다", "아빠 목소리를 등록했습니다" -->
+        <TextView
+            android:id="@+id/sheet_toast"
+            style="@style/Voium.Text.BodySmallStrong"
+            android:layout_width="wrap_content"
+            android:layout_height="82dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="28dp"
+            android:accessibilityLiveRegion="polite"
+            android:background="@drawable/bg_toast"
+            android:gravity="center"
+            android:paddingHorizontal="40dp"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:text="프로필을 삭제했습니다" />
+    </FrameLayout>
+</FrameLayout>

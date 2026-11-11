@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 프로필 카드, 상세 패널: 흰 바탕, 2dp 테두리, 모서리 28dp -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14131417">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <solid android:color="@color/voium_surface" />
+            <stroke android:width="2dp" android:color="@color/voium_divider" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ivi_basic_button Small / Primary: 64dp, 모서리 16dp, 옅은 회색 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14131417">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp" />
+            <solid android:color="@color/voium_button_basic" />
+        </shape>
+    </item>
+</ripple>

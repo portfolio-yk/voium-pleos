@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma C2 chip: 흰 배경, 2dp 테두리(divider/tertiary), 완전한 둥근 모서리 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14131417">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <solid android:color="@color/voium_surface" />
+            <stroke android:width="2dp" android:color="@color/voium_divider" />
+        </shape>
+    </item>
+</ripple>

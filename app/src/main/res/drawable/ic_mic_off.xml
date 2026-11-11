@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 마이크 오류 아이콘 (217:4181 칩 32dp, 217:4199 큰 아이콘 70.4dp). 같은 모양이라 크기만 바꿔 씁니다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:fillColor="#B3261E"
+        android:pathData="M20 8.09091C20 5.83156 18.2091 4 16 4C13.7909 4 12 5.83156 12 8.09091V14.9091C12 17.1684 13.7909 19 16 19C18.2091 19 20 17.1684 20 14.9091V8.09091Z" />
+    <path android:strokeColor="#B3261E" android:strokeWidth="2" android:strokeLineCap="round"
+        android:pathData="M7 15C7 17.4135 8.00089 19.7281 9.78249 21.4347C11.5641 23.1413 13.9804 24.1 16.5 24.1M16.5 24.1C19.0196 24.1 21.4359 23.1413 23.2175 21.4347C24.9991 19.7281 26 17.4135 26 15M16.5 24.1V28" />
+    <path android:strokeColor="#B3261E" android:strokeWidth="3.5" android:strokeLineCap="round"
+        android:pathData="M5 4L27 28" />
+</vector>
