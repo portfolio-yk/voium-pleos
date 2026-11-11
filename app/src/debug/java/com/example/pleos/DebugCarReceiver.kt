@@ -13,10 +13,22 @@ import com.example.pleos.car.CarSignals
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es place 휴게소 --ei remain 1200
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es place none     (안내 끝)
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es lights none    (none | ok: 실내 조명 미지원/지원)
+ * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es rain on        (on | off: 와이퍼 작동 = 비, 대화 제안 날씨 카드)
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es history demo   (예시 대화 기록을 저장하고 AI 요약 요청)
+ * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es stt device     (Pleos STT 시험, PleosSttProbe 참고)
+ * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es mic file       (마이크 대신 files/fake_mic.wav, off로 되돌림)
  */
 class DebugCarReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        intent.getStringExtra("mic")?.let {
+            com.example.pleos.stt.SpeechmaticsSession.debugMicFile =
+                if (it == "file") java.io.File(context.filesDir, "fake_mic.wav") else null
+            return
+        }
+        intent.getStringExtra("stt")?.let {
+            PleosSttProbe.handle(context, it)
+            return
+        }
         if (intent.getStringExtra("history") == "demo") {
             saveDemoRecord(context)
             return
@@ -38,7 +50,12 @@ class DebugCarReceiver : BroadcastReceiver() {
             "ok" -> true
             else -> CarSignals.lightsSupported
         }
-        CarSignals.simulate(seats, parked, trip, lights)
+        val rain = when (intent.getStringExtra("rain")) {
+            "on" -> true
+            "off" -> false
+            else -> CarSignals.raining
+        }
+        CarSignals.simulate(seats, parked, trip, lights, rain)
     }
 
     private fun saveDemoRecord(context: Context) {

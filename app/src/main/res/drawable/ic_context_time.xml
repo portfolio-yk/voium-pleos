@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 대화 제안 (시간) 시계 아이콘 (243:4268) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp" android:height="40dp" android:viewportWidth="40" android:viewportHeight="40">
+    <path android:strokeColor="#6E7380" android:strokeWidth="2.66667"
+        android:pathData="M36 20.6667C36 29.135 29.135 36 20.6667 36C12.1983 36 5.33333 29.135 5.33333 20.6667C5.33333 12.1983 12.1983 5.33333 20.6667 5.33333C29.135 5.33333 36 12.1983 36 20.6667Z" />
+    <path android:strokeColor="#6E7380" android:strokeWidth="2.66667" android:strokeLineCap="round"
+        android:pathData="M20 12V20.5714L25.3333 24" />
+</vector>

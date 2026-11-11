@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 대화 제안 (위치) 위치 아이콘 (243:4321) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp" android:height="40dp" android:viewportWidth="40" android:viewportHeight="40">
+    <path android:strokeColor="#454950" android:strokeWidth="2.93333"
+        android:pathData="M20 36C20 36 8 24 8 16C8 9.33333 13.3333 4 20 4C26.6667 4 32 9.33333 32 16C32 24 20 36 20 36Z" />
+    <path android:fillColor="#454950"
+        android:pathData="M20 12A4 4 0 1 1 20 20A4 4 0 1 1 20 12Z" />
+</vector>

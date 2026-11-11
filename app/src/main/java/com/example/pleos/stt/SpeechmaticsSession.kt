@@ -57,6 +57,8 @@ class SpeechmaticsSession(
     private val listener: Listener,
     /** 네트워크 복구 감지와 마이크 뺏김 감지에 씁니다. 없으면 두 기능 없이 동작합니다. */
     context: Context? = null,
+    /** 녹음한 소리 조각을 함께 받을 곳(녹음 스레드에서 부름). 일시 정지 중에는 무음 조각이 갑니다. */
+    private val audioTap: ((ByteArray) -> Unit)? = null,
 ) {
     data class Options(
         val language: String = "ko",
@@ -315,6 +317,8 @@ class SpeechmaticsSession(
     private fun readAndSend(record: AudioRecord) {
         val buffer = ByteArray(CHUNK_BYTES)
         var readCount = 0
+        val fake = debugMicFile?.takeIf { it.isFile }?.let { runCatching { it.inputStream().buffered() }.getOrNull() }
+        fake?.skip(WAV_HEADER_BYTES)
         while (audioActive) {
             val read = record.read(buffer, 0, buffer.size)
             if (!audioActive) break
@@ -323,7 +327,18 @@ class SpeechmaticsSession(
                 break
             }
             if (read == 0) continue
+            if (fake != null) {
+                // 디버그: 마이크 대신 파일 소리를 같은 속도로 넣습니다. 파일이 끝나면 무음입니다.
+                java.util.Arrays.fill(buffer, 0, read, 0)
+                var at = 0
+                while (at < read) {
+                    val n = fake.read(buffer, at, read - at)
+                    if (n <= 0) break
+                    at += n
+                }
+            }
             val chunk = if (paused) ByteArray(read) else buffer.copyOf(read)
+            audioTap?.invoke(chunk)
             reportLevel(chunk, read, ++readCount)
             val problem = queueAndSend(chunk)
             // 같은 문제가 여러 번 올라와도 지금 연결에서 처음 한 번만 처리합니다.
@@ -724,6 +739,10 @@ class SpeechmaticsSession(
         private const val AUDIO_TAG = "SttAudio"
         private const val ENDPOINT = "wss://global.rt.speechmatics.com/v2"
         const val SAMPLE_RATE = 16_000
+
+        /** 디버그 빌드 시험용: 정하면 마이크 대신 이 WAV(16kHz 모노 16비트) 소리를 씁니다. */
+        @Volatile var debugMicFile: java.io.File? = null
+        private const val WAV_HEADER_BYTES = 44L
         private const val CHANNEL = AudioFormat.CHANNEL_IN_MONO
         private const val ENCODING = AudioFormat.ENCODING_PCM_16BIT // pcm_s16le
 

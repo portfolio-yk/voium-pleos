@@ -57,4 +57,7 @@
     <color name="voium_picker_note">#FF737882</color>       <!-- 사용자 지정 색 안내 -->
     <color name="voium_dim">#73000000</color>               <!-- 시트 뒤 어둡게 -->
     <color name="voium_guest_dot">#FFC3C3CC</color>          <!-- 등록하지 않은 화자 점 -->
+    <color name="voium_end_button">#FF2B2D33</color>        <!-- 상단 바 대화 종료 버튼 (243:4263) -->
+    <color name="voium_dot_active">#FF6B7079</color>        <!-- 대화 제안 현재 점 (243:4274) -->
+    <color name="voium_dot_inactive">#FFC9CDD4</color>      <!-- 대화 제안 나머지 점 -->
 </resources>

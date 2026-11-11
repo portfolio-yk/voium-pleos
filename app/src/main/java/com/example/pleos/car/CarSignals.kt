@@ -1,5 +1,9 @@
 package com.example.pleos.car
 
+import ai.pleos.playground.vehicle.api.model.area.WindowArea
+import ai.pleos.playground.vehicle.constant.area.WindowValue
+import ai.pleos.playground.vehicle.constant.control.WiperState
+import ai.pleos.playground.vehicle.listener.WiperStateListener
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -59,6 +63,10 @@ object CarSignals {
     var lightsSupported: Boolean? = null
         private set
 
+    /** 비가 오는지(앞 유리 와이퍼가 작동 중인지). 알 수 없으면 null */
+    var raining: Boolean? = null
+        private set
+
     /** 내비게이션 안내 중인 다음 목적지. 안내 중이 아니면 null */
     var trip: Trip? = null
         private set
@@ -81,6 +89,7 @@ object CarSignals {
         watchSeats(car)
         watchGear(car)
         checkLights(car)
+        watchWiper(car)
         startNavi(app)
     }
 
@@ -94,7 +103,7 @@ object CarSignals {
 
     private fun changed() {
         // 확인용: adb logcat -s CarSignals
-        Log.i(TAG, "seats=$occupiedSeats parked=$isParked lights=$lightsSupported trip=$trip")
+        Log.i(TAG, "seats=$occupiedSeats parked=$isParked lights=$lightsSupported rain=$raining trip=$trip")
         main.post { listeners.toList().forEach { it.onCarSignalsChanged() } }
     }
 
@@ -155,6 +164,28 @@ object CarSignals {
             isParked = parked
             changed()
         }
+    }
+
+    // ---------------------------------------------------------------- 와이퍼 (대화 제안의 날씨 카드)
+
+    private fun watchWiper(car: Vehicle) {
+        runCatching {
+            car.getWiper().registerWiperState(WindowArea(WindowValue.FRONT_WINDSHIELD), object : WiperStateListener {
+                override fun onWiperStateUpdated(state: WiperState?) = onMain {
+                    val rain = when (state) {
+                        WiperState.ON -> true
+                        WiperState.OFF -> false
+                        else -> null
+                    }
+                    if (rain != raining) {
+                        raining = rain
+                        changed()
+                    }
+                }
+
+                override fun onFailed(e: Exception) = log("wiper listen", e)
+            })
+        }.onFailure { log("wiper", it) }
     }
 
     // ---------------------------------------------------------------- 실내 조명
@@ -303,7 +334,9 @@ object CarSignals {
         parked: Boolean? = isParked,
         trip: Trip? = this.trip,
         lights: Boolean? = lightsSupported,
+        rain: Boolean? = raining,
     ) {
+        raining = rain
         occupiedSeats = seats
         lightsSupported = lights
         isParked = parked

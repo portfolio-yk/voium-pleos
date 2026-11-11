@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.pleos.navi.helper)
     // 대화 기록 AI 요약 (Pleos LLM)
     implementation(libs.pleos.llm)
+    implementation(libs.pleos.stt)
     testImplementation(libs.junit)
     // Android의 org.json은 JVM 단위 테스트에서 동작하지 않아 실제 구현을 추가합니다.
     testImplementation(libs.org.json)

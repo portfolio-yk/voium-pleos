@@ -48,3 +48,26 @@ class ConversationStartersTest {
         assertNull(TripPlanner.nextStop(destination("", 100), emptyList()))
     }
 }
+
+class ConversationCardsTest {
+    @Test
+    fun onlyTimeCardWithoutTripOrRain() {
+        val cards = ConversationStarters.cards(12, "오후 12:40", null, raining = false, round = 0)
+        org.junit.Assert.assertEquals(listOf(ConversationStarters.Kind.TIME), cards.map { it.kind })
+        org.junit.Assert.assertEquals("오후 12:40 · 점심시간", cards[0].label)
+        org.junit.Assert.assertEquals("오늘 식사는\n어떻게 하셨어요?", cards[0].question)
+    }
+
+    @Test
+    fun timePlaceWeatherInOrderAndQuestionsAdvancePerRound() {
+        val first = ConversationStarters.cards(12, "오후 12:40", "경포해변" to 900, raining = true, round = 0)
+        org.junit.Assert.assertEquals(
+            listOf(ConversationStarters.Kind.TIME, ConversationStarters.Kind.PLACE, ConversationStarters.Kind.WEATHER),
+            first.map { it.kind },
+        )
+        org.junit.Assert.assertEquals("경포해변까지 15분", first[1].label)
+        org.junit.Assert.assertEquals("비 오는 중", first[2].label)
+        val second = ConversationStarters.cards(12, "오후 12:40", "경포해변" to 900, raining = true, round = 1)
+        org.junit.Assert.assertNotEquals(first[0].question, second[0].question)
+    }
+}

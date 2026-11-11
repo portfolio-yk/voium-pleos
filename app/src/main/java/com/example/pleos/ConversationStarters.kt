@@ -1,12 +1,38 @@
 package com.example.pleos
 
 /**
- * 대화가 없을 때 보여 주는 대화 제안입니다 (Figma C2 suggestion_placeholder).
- * 시간대마다 몇 가지 질문을 돌려 가며 보여 줍니다.
+ * 대화가 없을 때 보여 주는 대화 제안입니다 (Figma 243:4245 시간, 243:4298 위치, 243:4353 날씨).
+ * 지금 알 수 있는 상황(시간 · 내비 목적지 · 비)마다 카드를 한 장씩 만들고, 옆으로 넘기며 보여 줍니다.
+ * 한 바퀴 돌 때마다 각 카드의 질문도 다음 것으로 바뀝니다.
  */
 object ConversationStarters {
 
     data class Slot(val label: String, val questions: List<String>)
+
+    enum class Kind { TIME, PLACE, WEATHER }
+
+    /** 한 장의 제안 카드: 아이콘 종류, 상황 문구("오후 12:40 · 점심시간"), 질문 */
+    data class Card(val kind: Kind, val label: String, val question: String)
+
+    private val RAIN = listOf(
+        "창문에 김 서리면\n말해 줄래요?",
+        "빗길이니까\n천천히 가요",
+        "비 오는 날엔\n뭐 먹고 싶어요?",
+    )
+
+    /**
+     * 지금 보여 줄 수 있는 카드들. 시간 카드는 늘 있고, 내비 안내 중이면 위치 카드,
+     * 비가 오면(와이퍼 작동) 날씨 카드가 붙습니다. round는 몇 바퀴째인지(질문 고르기).
+     */
+    fun cards(hour: Int, timeText: String, trip: Pair<String, Int>?, raining: Boolean, round: Int): List<Card> = buildList {
+        val time = slotFor(hour)
+        add(Card(Kind.TIME, "$timeText · ${time.label}", time.questions[round.mod(time.questions.size)]))
+        if (trip != null) {
+            val place = forTrip(trip.first, trip.second)
+            add(Card(Kind.PLACE, place.label, place.questions[round.mod(place.questions.size)]))
+        }
+        if (raining) add(Card(Kind.WEATHER, "비 오는 중", RAIN[round.mod(RAIN.size)]))
+    }
 
     private val MORNING = Slot("아침 시간", listOf(
         "오늘 아침은\n드셨어요?",

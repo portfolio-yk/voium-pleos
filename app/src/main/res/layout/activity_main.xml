@@ -117,7 +117,8 @@
         </LinearLayout>
 
         <!--
-          suggestion_placeholder: 듣는 중인데 아직 대화가 없으면 시간대에 맞는 대화 제안을 돌려 보여 주고(154:3640),
+          suggestion (243:4245 시간, 243:4298 위치, 243:4353 날씨): 듣는 중인데 아직 대화가 없으면
+          시간 · 위치 · 날씨 제안을 한 장씩 옆으로 넘기며 보여 주고,
           통화 등으로 멈췄으면 같은 자리에 멈춘 이유를 보여 줍니다(120:5243).
         -->
         <LinearLayout
@@ -129,6 +130,7 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/suggestion_context_row"
                 android:layout_width="wrap_content"
                 android:layout_height="58dp"
                 android:gravity="center_vertical"
@@ -136,18 +138,20 @@
 
                 <ImageView
                     android:id="@+id/suggestion_icon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_clock" />
+                    android:src="@drawable/ic_context_time" />
 
                 <TextView
                     android:id="@+id/suggestion_context"
-                    style="@style/Voium.Text.BodySmallStrong"
+                    style="@style/Voium.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="14dp"
                     android:textColor="@color/voium_text_secondary"
+                    android:textFontWeight="700"
+                    android:textSize="36sp"
                     tools:text="오후 12:40 · 점심시간" />
             </LinearLayout>
 
@@ -158,7 +162,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
                 android:alpha="0.4"
-                android:maxWidth="1000dp"
+                android:maxWidth="1100dp"
+                android:textColor="@color/voium_idle_text"
                 tools:text="오늘 식사는\n어떻게 하셨어요?" />
 
             <LinearLayout
@@ -170,13 +175,13 @@
                 android:orientation="horizontal" />
         </LinearLayout>
 
-        <!-- 대기 (217:4090): 대화를 시작할까요? -->
+        <!-- 대기 (261:4277 공통_자막_대화 시작): 대화를 시작할까요? -->
         <LinearLayout
             android:id="@+id/start_panel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="120dp"
-            android:layout_marginTop="300dp"
+            android:layout_marginTop="326dp"
             android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="visible">
@@ -186,6 +191,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:accessibilityHeading="true"
+                android:lineHeight="120sp"
                 android:text="@string/idle_title"
                 android:textFontWeight="800"
                 android:textSize="96sp" />
@@ -194,47 +200,25 @@
                 style="@style/Voium.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
+                android:layout_marginTop="20dp"
                 android:text="@string/idle_subtitle"
                 android:textColor="@color/voium_hint"
                 android:textFontWeight="700"
                 android:textSize="40sp" />
 
-            <!-- btn/대화 시작: ivi_basic_button Large / Secondary, 360×100 -->
+            <!-- btn/대화 시작 (261:4329): 520×120, 모서리 32 -->
             <TextView
                 android:id="@+id/start_button"
-                style="@style/Voium.Text.TitleSmallStrong"
-                android:layout_width="360dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="52dp"
+                style="@style/Voium.Text"
+                android:layout_width="520dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="76dp"
                 android:background="@drawable/bg_button_filled_large"
                 android:gravity="center"
                 android:text="@string/start_conversation"
-                android:textColor="@android:color/white" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="180dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_star_key" />
-
-                <TextView
-                    style="@style/Voium.Text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/idle_star_hint"
-                    android:textColor="@color/voium_hint"
-                    android:textFontWeight="700"
-                    android:textSize="32sp" />
-            </LinearLayout>
+                android:textColor="@android:color/white"
+                android:textFontWeight="700"
+                android:textSize="40sp" />
         </LinearLayout>
 
         <!-- 오류 (217:4175 마이크 오류, 120:5263 마이크 권한): 빨간 원 아이콘 · 제목 · 설명 · 버튼 -->

@@ -16,6 +16,8 @@
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_LIGHTS" />
     <!-- 기어(P): 프로필 편집·목소리 등록은 정차 중에만 -->
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+    <!-- 와이퍼 작동 여부(비): 대화 제안의 날씨 카드 -->
+    <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
     <!-- 목적지·경유지와 남은 시간: 대화 제안 -->
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
     <!-- 대화 기록 AI 요약 (Pleos LLM) -->

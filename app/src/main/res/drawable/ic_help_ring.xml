@@ -2,6 +2,6 @@
 <!-- Figma 도움말 칩 아이콘의 원 (217:4582). 가운데 "?"는 글자로 겹쳐 둡니다. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="26dp" android:height="26dp" android:viewportWidth="26" android:viewportHeight="26">
-    <path android:strokeColor="#131417" android:strokeWidth="2.4"
+    <path android:strokeColor="#454950" android:strokeWidth="2.4"
         android:pathData="M24.8 13A11.8 11.8 0 1 1 1.2 13A11.8 11.8 0 1 1 24.8 13Z" />
 </vector>

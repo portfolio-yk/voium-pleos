@@ -48,6 +48,8 @@ import com.example.pleos.history.RecordLine
 import com.example.pleos.stt.EnrolledSpeaker
 import com.example.pleos.stt.ConversationTranscript
 import com.example.pleos.stt.Scheduler
+import com.example.pleos.stt.PleosTextFusion
+import com.example.pleos.stt.PleosTextRecognizer
 import com.example.pleos.stt.Segment
 import com.example.pleos.stt.SpeakerDirectory
 import com.example.pleos.stt.SpeakerTheme
@@ -112,6 +114,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var suggestionText: TextView
     private lateinit var suggestionDots: LinearLayout
     private lateinit var suggestionIcon: ImageView
+    private lateinit var suggestionContextRow: View
     private lateinit var notice: TextView
     private lateinit var startPanel: View
     private lateinit var errorPanel: View
@@ -193,7 +196,6 @@ class MainActivity : AppCompatActivity() {
     private var conversationId = ConversationRecord.newId()
     private var conversationStartedAt = 0L
     private var conversationSaved = false
-    private val historyListener: () -> Unit = { if (::statusRow.isInitialized) renderStatus() }
 
     /** 이번 대화에서 등록하지 않은 사람의 목소리 식별값(세션이 끝날 때 받음). label → 식별값 */
     private val guestVoices = LinkedHashMap<String, List<String>>()
@@ -218,6 +220,7 @@ class MainActivity : AppCompatActivity() {
 
     // 대화 제안
     private var suggestionIndex = 0
+    private var suggestionShowing = false
     private var suggestionRotating = false
     private val rotateSuggestion = object : Runnable {
         override fun run() {
@@ -245,7 +248,7 @@ class MainActivity : AppCompatActivity() {
     // Pleos 차량 정보: 좌석 수가 바뀌면 탑승 인원을, 내비 목적지가 바뀌면 대화 제안을 다시 그립니다.
     private val carListener = CarSignals.Listener {
         renderPassengers(visibleTurns())
-        // 주행 중 칩(기어)과 대화 제안(내비 목적지)을 다시 그립니다.
+        // 대화 제안(내비 목적지·비)을 다시 그립니다.
         renderStatus()
         if (suggestion.visibility == View.VISIBLE && !isAudioPaused()) renderSuggestion(animate = false)
     }
@@ -307,7 +310,7 @@ class MainActivity : AppCompatActivity() {
             setFinalOnly(!finalOnly)
             true
         }
-        // 대화 시작은 대기 화면의 버튼으로, 끝내기는 "대화종료" 칩으로 합니다.
+        // 대화 시작은 대기 화면의 버튼으로, 끝내기는 상단 바의 "대화 종료" 버튼으로 합니다.
         findViewById<View>(R.id.start_button).setOnClickListener { checkPermissionAndStart() }
         statusRow.endButton.setOnClickListener { endConversation() }
         statusRow.helpButton.setOnClickListener { showHelp(true) }
@@ -317,14 +320,12 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.help_vehicle_settings).setOnClickListener { openVehicleSettings() }
         bindHelpSteps()
         onBackPressedDispatcher.addCallback(this, helpBack)
-        statusRow.historyButton.setOnClickListener { openHistory() }
         findViewById<View>(R.id.guest_close).setOnClickListener {
             if (pendingGuests.isNotEmpty()) pendingGuests.removeAt(0)
             renderStatus()
         }
         findViewById<View>(R.id.guest_merge).setOnClickListener { openGuest(merge = true) }
         findViewById<View>(R.id.guest_new).setOnClickListener { openGuest(merge = false) }
-        ConversationHistoryStore.addListener(historyListener)
         // 설정 칩: 프로필·앰비언트 라이트·데이터 관리. 설정에 있는 동안 자막은 멈춥니다(onPause).
         statusRow.settingsButton.setOnClickListener { openSettings() }
 
@@ -383,7 +384,6 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) modeListener?.let { audioManager.removeOnModeChangedListener(it) }
         atmosphere.dispose()
         CarSignals.removeListener(carListener)
-        ConversationHistoryStore.removeListener(historyListener)
         CarSignals.setCabinColor(null)
         orbColorAnimator?.cancel()
         handler.removeCallbacksAndMessages(null)
@@ -442,6 +442,8 @@ class MainActivity : AppCompatActivity() {
         // 등록된 목소리를 함께 보내면 결과에 등록한 이름의 라벨이 붙습니다.
         val profiles = profileStore.load()
         speakerDirectory.setProfiles(profiles)
+        // 글자는 Pleos STT(차 안)에서, 화자 구분은 Speechmatics에서 받아 합칩니다.
+        lateinit var fusion: PleosTextFusion
         val candidate = SpeechmaticsSession(
             httpClient = httpClient,
             tokenProvider = tokenProvider::fetch,
@@ -457,7 +459,8 @@ class MainActivity : AppCompatActivity() {
                 getSpeakers = true,
             ),
             context = applicationContext,
-            listener = object : SpeechmaticsSession.Listener {
+            audioTap = { fusion.onAudio(it) },
+            listener = PleosTextFusion(recognizer = PleosTextRecognizer(applicationContext), downstream = object : SpeechmaticsSession.Listener {
                 override fun onFinal(segments: List<Segment>) {
                     if (!isCurrent()) return
                     if (BuildConfig.DEBUG) {
@@ -556,7 +559,7 @@ class MainActivity : AppCompatActivity() {
                     phase = Phase.ERROR
                     renderStatus()
                 }
-            },
+            }).also { fusion = it },
         )
         session = candidate
         candidate.start()
@@ -1082,6 +1085,10 @@ class MainActivity : AppCompatActivity() {
         val paused = isAudioPaused()
         val showSuggestion = !paused && empty && captionsVisible()
         suggestion.visibility = if (paused || showSuggestion) View.VISIBLE else View.GONE
+        if (showSuggestion != suggestionShowing) {
+            suggestionShowing = showSuggestion
+            applyOrbColors()
+        }
         if (paused) {
             stopSuggestionRotation()
             renderPauseMessage()
@@ -1103,48 +1110,67 @@ class MainActivity : AppCompatActivity() {
             else -> R.string.paused_mic_title
         }
         suggestionContext.setText(if (inCall) R.string.paused_call_context else R.string.paused_audio_context)
-        suggestionContext.textSize = 36f
-        setSuggestionIconSize(40)
-        suggestionText.animate().cancel()
-        suggestionText.alpha = SUGGESTION_ALPHA
+        suggestionIcon.setImageResource(R.drawable.ic_context_time)
+        resetSuggestionSlide()
         suggestionText.setText(title)
         suggestionDots.visibility = View.GONE
     }
 
-    private fun setSuggestionIconSize(sizeDp: Int) {
-        val params = suggestionIcon.layoutParams
-        if (params.width != dp(sizeDp)) {
-            params.width = dp(sizeDp)
-            params.height = dp(sizeDp)
-            suggestionIcon.layoutParams = params
+    private fun resetSuggestionSlide() {
+        for (view in listOf(suggestionContextRow, suggestionText)) {
+            view.animate().cancel()
+            view.translationX = 0f
         }
+        suggestionContextRow.alpha = 1f
+        suggestionText.alpha = SUGGESTION_ALPHA
     }
 
-    /** "오후 12:40 · 점심시간"과 그 시간대의 질문, 몇 번째 질문인지 나타내는 점을 그립니다. */
+    /**
+     * 대화 제안 카드(시간 · 위치 · 날씨)를 그립니다. animate면 지금 카드를 왼쪽으로 밀어내고
+     * 다음 카드를 오른쪽에서 밀어 넣습니다(Figma "슬라이딩 캐러셀"). 점은 카드가 여러 장이면 카드 수,
+     * 한 장뿐이면 그 카드의 질문 수만큼 그립니다.
+     */
     private fun renderSuggestion(animate: Boolean) {
         val now = Calendar.getInstance()
-        // 내비게이션 안내 중이면 다음 목적지·남은 시간으로, 아니면 시간대로 제안합니다.
-        val slot = CarSignals.trip?.let { ConversationStarters.forTrip(it.place, it.remainSeconds) }
-            ?: ConversationStarters.slotFor(now.get(Calendar.HOUR_OF_DAY))
-        val index = suggestionIndex.mod(slot.questions.size)
         val time = SimpleDateFormat("a h:mm", Locale.KOREAN).format(now.time)
-        suggestionContext.text = "$time · ${slot.label}"
-        suggestionContext.textSize = 26f
-        setSuggestionIconSize(30)
+        val trip = CarSignals.trip?.let { it.place to it.remainSeconds }
+        val probe = ConversationStarters.cards(now.get(Calendar.HOUR_OF_DAY), time, trip, CarSignals.raining == true, 0)
+        val count = probe.size
+        val position = suggestionIndex.mod(count)
+        val round = suggestionIndex / count
+        val card = ConversationStarters.cards(now.get(Calendar.HOUR_OF_DAY), time, trip, CarSignals.raining == true, round)[position]
         suggestionDots.visibility = View.VISIBLE
+        if (count > 1) renderSuggestionDots(count, position) else renderSuggestionDots(SUGGESTION_QUESTIONS, round.mod(SUGGESTION_QUESTIONS))
 
-        val question = slot.questions[index]
-        if (animate && areAnimationsEnabled() && suggestionText.text.isNotEmpty()) {
-            suggestionText.animate().alpha(0f).setDuration(200).withEndAction {
-                suggestionText.text = question
-                suggestionText.animate().alpha(SUGGESTION_ALPHA).setDuration(200).start()
-            }.start()
-        } else {
-            suggestionText.animate().cancel()
-            suggestionText.alpha = SUGGESTION_ALPHA
-            suggestionText.text = question
+        val apply = {
+            suggestionIcon.setImageResource(
+                when (card.kind) {
+                    ConversationStarters.Kind.TIME -> R.drawable.ic_context_time
+                    ConversationStarters.Kind.PLACE -> R.drawable.ic_context_place
+                    ConversationStarters.Kind.WEATHER -> R.drawable.ic_context_rain
+                },
+            )
+            suggestionContext.text = card.label
+            suggestionText.text = card.question
         }
-        renderSuggestionDots(slot.questions.size, index)
+        if (!animate || !areAnimationsEnabled() || suggestionText.text.isEmpty()) {
+            resetSuggestionSlide()
+            apply()
+            return
+        }
+        val shift = dp(SUGGESTION_SLIDE_DP).toFloat()
+        val views = listOf(suggestionContextRow to 1f, suggestionText to SUGGESTION_ALPHA)
+        views.forEachIndexed { i, (view, _) ->
+            view.animate().cancel()
+            view.animate().translationX(-shift).alpha(0f).setDuration(SUGGESTION_SLIDE_MS)
+                .setInterpolator(android.view.animation.AccelerateInterpolator())
+                .withEndAction {
+                    if (i == 0) apply()
+                    view.translationX = shift
+                    view.animate().translationX(0f).alpha(views[i].second).setDuration(SUGGESTION_SLIDE_MS)
+                        .setInterpolator(android.view.animation.DecelerateInterpolator()).start()
+                }.start()
+        }
     }
 
     private fun renderSuggestionDots(count: Int, active: Int) {
@@ -1161,7 +1187,7 @@ class MainActivity : AppCompatActivity() {
             val dot = suggestionDots.getChildAt(i)
             val isActive = i == active
             dot.layoutParams.width = dp(if (isActive) 36 else 12)
-            dot.background = pill(color(if (isActive) R.color.voium_gray else R.color.voium_gray_soft))
+            dot.background = pill(color(if (isActive) R.color.voium_dot_active else R.color.voium_dot_inactive))
             dot.requestLayout()
         }
     }
@@ -1257,7 +1283,8 @@ class MainActivity : AppCompatActivity() {
     private fun applyOrbColors() {
         if (!::voiceOrb.isInitialized) return
         val base = when (orbMode) {
-            OrbMode.LISTENING -> AppOrbStyle
+            // 듣는 중이어도 아직 대화가 없어 대화 제안을 보여 주는 동안은 회색 링입니다(Figma 243:4245).
+            OrbMode.LISTENING -> if (suggestionShowing) IdleOrbStyle else AppOrbStyle
             OrbMode.PAUSED -> PausedOrbStyle
             else -> IdleOrbStyle
         }
@@ -1377,10 +1404,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun openHistory() {
-        startActivity(Intent(this, SettingsActivity::class.java).putExtra(SettingsActivity.EXTRA_OPEN, SettingsActivity.OPEN_HISTORY))
-    }
-
     private fun renderStatus() {
         val paused = isAudioPaused()
         val kind = errorKind()
@@ -1397,18 +1420,12 @@ class MainActivity : AppCompatActivity() {
             else -> R.string.status_idle to StatusRow.Kind.IDLE
         }
         statusRow.setStatus(getString(label), chip)
-        statusButton.contentDescription = getString(label)
         if (chip != StatusRow.Kind.LISTENING) {
             statusIcon.scaleX = 1f
             statusIcon.scaleY = 1f
         }
         val idle = !isPreview && !isLive() && phase != Phase.STOPPING && phase != Phase.ERROR
-        statusRow.setCaptionControls(
-            showEnd = !idle && phase != Phase.STOPPING,
-            showHelp = true,
-            showDriving = idle && CarSignals.isParked == false,
-            showHistory = idle && CarSignals.isParked != false && historyStore.load().isNotEmpty(),
-        )
+        statusRow.setEndVisible(!idle && phase != Phase.STOPPING)
 
         startPanel.visibility = if (idle) View.VISIBLE else View.GONE
         renderGuestCard(idle)
@@ -1480,7 +1497,6 @@ class MainActivity : AppCompatActivity() {
         voiceOrb.style = IdleOrbStyle
         voiceOrb.sensitivity = AppMicSensitivity
         statusRow = StatusRow(this)
-        statusRow.setSettingsSelected(false)
         previousLines = findViewById(R.id.previous_lines)
         currentCaption = findViewById(R.id.current_caption)
         speakerPill = findViewById(R.id.speaker_pill)
@@ -1494,6 +1510,7 @@ class MainActivity : AppCompatActivity() {
         suggestionText = findViewById(R.id.suggestion_text)
         suggestionDots = findViewById(R.id.suggestion_dots)
         suggestionIcon = findViewById(R.id.suggestion_icon)
+        suggestionContextRow = findViewById(R.id.suggestion_context_row)
         notice = findViewById(R.id.notice)
         startPanel = findViewById(R.id.start_panel)
         errorPanel = findViewById(R.id.error_panel)
@@ -1569,7 +1586,12 @@ class MainActivity : AppCompatActivity() {
 
         /** 대화 제안 질문의 진하기 (Figma opacity 40%)와 바뀌는 간격 */
         const val SUGGESTION_ALPHA = 0.4f
-        const val SUGGESTION_INTERVAL_MS = 8_000L
+        /** 대화 제안 카드가 밀려 나가고 들어오는 거리와 시간 */
+        const val SUGGESTION_SLIDE_DP = 120
+        const val SUGGESTION_SLIDE_MS = 260L
+        /** 시간대마다 준비한 질문 수(카드가 한 장일 때 점 개수) */
+        const val SUGGESTION_QUESTIONS = 3
+        const val SUGGESTION_INTERVAL_MS = 5_000L
 
         /**
          * 등록된 목소리로 판단하는 기준입니다(0~1, 높을수록 엄격).

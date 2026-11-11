@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 상단 바 상태 점 (243:4294 듣는 중): 18% 원 + 가운데 점 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp" android:height="28dp" android:viewportWidth="28" android:viewportHeight="28">
+    <path android:fillColor="#13996F" android:fillAlpha="0.18"
+        android:pathData="M14 0A14 14 0 1 1 14 28A14 14 0 1 1 14 0Z" />
+    <path android:fillColor="#13996F"
+        android:pathData="M14 7A7 7 0 1 1 14 21A7 7 0 1 1 14 7Z" />
+</vector>
