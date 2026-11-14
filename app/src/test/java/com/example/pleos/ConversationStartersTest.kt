@@ -71,3 +71,53 @@ class ConversationCardsTest {
         org.junit.Assert.assertNotEquals(first[0].question, second[0].question)
     }
 }
+
+class SuggestionAiTest {
+    private val situation = com.example.pleos.ai.SuggestionAi.Situation(
+        timeText = "오후 12:40", slotLabel = "점심시간", parked = false, passengers = 3,
+        trip = "경포해변" to 900, raining = true, lastTopic = "휴게소에서 호두과자를 먹기로 했어요",
+    )
+
+    @Test
+    fun promptHasVehicleFactsAndSections() {
+        val prompt = com.example.pleos.ai.SuggestionAi.promptOf(situation)
+        listOf("주행 중", "탑승 인원: 3명", "경포해변, 15분 남음", "와이퍼", "호두과자", "[시간]", "[위치]", "[날씨]").forEach {
+            assertTrue(it, prompt.contains(it))
+        }
+        val parked = com.example.pleos.ai.SuggestionAi.promptOf(situation.copy(parked = true, trip = null, raining = false))
+        assertTrue(parked.contains("정차 중"))
+        assertTrue(!parked.contains("[위치]") && !parked.contains("[날씨]"))
+    }
+
+    @Test
+    fun parsesSectionsAndWrapsLines() {
+        val text = """
+            [시간]
+            - 점심은 뭐 드시고 싶으세요?
+            - 오늘 오전엔 어땠어요?
+            [위치]
+            1. 경포해변에 가면 / 뭐부터 할까요?
+            [날씨]
+            * 비 오는 날 생각나는 음식 있어요?
+            - 네?
+        """.trimIndent()
+        val parsed = com.example.pleos.ai.SuggestionAi.parse(text, situation)
+        assertEquals(2, parsed[ConversationStarters.Kind.TIME]!!.size)
+        assertEquals("점심은 뭐\n드시고 싶으세요?", parsed[ConversationStarters.Kind.TIME]!![0])
+        assertEquals(listOf("경포해변에 가면\n뭐부터 할까요?"), parsed[ConversationStarters.Kind.PLACE])
+        assertEquals(listOf("비 오는 날 생각나는\n음식 있어요?", "네?"), parsed[ConversationStarters.Kind.WEATHER])
+        // 목적지·비가 없는 상황이면 그 카드는 버립니다.
+        val plain = com.example.pleos.ai.SuggestionAi.parse(text, situation.copy(trip = null, raining = false))
+        assertEquals(setOf(ConversationStarters.Kind.TIME), plain.keys)
+    }
+
+    @Test
+    fun aiQuestionsReplaceDefaults() {
+        val ai = mapOf(ConversationStarters.Kind.TIME to listOf("가\n나", "다\n라"))
+        val first = ConversationStarters.cards(12, "오후 12:40", null, false, 0, ai).single()
+        assertEquals("가\n나", first.question)
+        assertEquals(2, first.questionCount)
+        assertEquals("다\n라", ConversationStarters.cards(12, "오후 12:40", null, false, 1, ai).single().question)
+    }
+}
+

@@ -164,12 +164,16 @@ class SpeakerDirectory(profiles: List<VoiceProfile> = emptyList()) {
     fun resolve(speaker: String, commit: Boolean = true): SpeakerName {
         if (speaker == UNKNOWN) return SpeakerName(UNKNOWN_LABEL, isEnrolled = false, colorIndex = null)
         val color = colorOrder[speaker] ?: colorOrder.size.also { if (commit) colorOrder[speaker] = it }
+        if (speaker == QUICK_REPLY) return SpeakerName(QUICK_REPLY_LABEL, isEnrolled = false, colorIndex = color)
         profilesByLabel[speaker]?.let {
             return SpeakerName(it.name, isEnrolled = true, colorIndex = color, colorKey = it.colorKey)
         }
         val number = guestNumbers[speaker] ?: (guestNumbers.size + 1).also { if (commit) guestNumbers[speaker] = it }
         return SpeakerName("$GUEST_PREFIX$number", isEnrolled = false, colorIndex = color)
     }
+
+    /** 등록된 사람들이 쓰는 색 키. 등록하지 않은 사람에게는 이 색을 피해서 줍니다. */
+    fun enrolledColorKeys(): Set<String> = profilesByLabel.values.mapNotNull { it.colorKey }.toSet()
 
     /** 새 대화를 시작할 때 발화자 번호와 색 순서를 처음부터 다시 매깁니다. */
     fun reset() {
@@ -183,6 +187,9 @@ class SpeakerDirectory(profiles: List<VoiceProfile> = emptyList()) {
     companion object {
         const val UNKNOWN = "UU"
         const val UNKNOWN_LABEL = "화자 확인 중"
+        /** 빠른 답장으로 대신 말한 문장(차량 스피커로 읽음) */
+        const val QUICK_REPLY = "QR"
+        const val QUICK_REPLY_LABEL = "나"
         const val GUEST_PREFIX = "화자 "
     }
 }

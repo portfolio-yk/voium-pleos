@@ -13,7 +13,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
 
 /**
- * 목소리 등록에서 읽을 문장 (Figma karaoke): 72sp ExtraBold 문장, 읽은 곳까지 색이 채워지고
+ * 목소리 등록에서 읽을 문장 (Figma karaoke): 72sp ExtraBold 문장(칸보다 길면 줄여 한 줄에 맞춤), 읽은 곳까지 색이 채워지고
  * 그 위치에 공(●)이 따라가며, 아래 6dp 막대도 같은 위치까지 채워집니다.
  */
 class KaraokeView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
@@ -69,8 +69,19 @@ class KaraokeView @JvmOverloads constructor(context: Context, attrs: AttributeSe
         }
     }
 
+    private val maxTextSize = 72f * resources.displayMetrics.scaledDensity
+    private val minTextSize = 48f * resources.displayMetrics.scaledDensity
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = textPaint.measureText(text).toInt() + (8 * density).toInt()
+        // 문장이 칸보다 길면 한 줄에 다 들어가도록 글자를 줄입니다(72sp → 최소 48sp). 잘리지 않게 합니다.
+        val padding = 8 * density
+        textPaint.textSize = maxTextSize
+        val full = textPaint.measureText(text)
+        val available = MeasureSpec.getSize(widthMeasureSpec) - padding
+        if (MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED && available > 0 && full > available) {
+            textPaint.textSize = (maxTextSize * available / full).coerceAtLeast(minTextSize)
+        }
+        val width = (textPaint.measureText(text) + padding).toInt()
         setMeasuredDimension(resolveSize(width, widthMeasureSpec), resolveSize((176 * density).toInt(), heightMeasureSpec))
     }
 

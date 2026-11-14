@@ -390,7 +390,7 @@ sori-node 2의 기능을 Android(View + Kotlin)로 옮겼습니다. 패키지는
 | `tests/*.test.js` | `app/src/test/java/com/example/pleos/stt/*Test.kt` (22개 통과) |
 
 - **API 키**: `local.properties`의 `speechmatics.apiKey`에 있습니다(Git 제외). `BuildConfig.SPEECHMATICS_API_KEY`로 주입됩니다. 원본은 `claude/sori-node 2/.env`입니다. **APK 안에 키가 들어가므로 테스트용입니다.** 배포 전에는 서버가 임시 키를 발급하도록 바꿔야 합니다.
-- **설정**: language `ko`, model `enhanced`, diarization `speaker` + `prefer_current_speaker`, partials 켜기, max_delay 2.0, `wss://global.rt.speechmatics.com/v2?jwt=...`
+- **설정**: language `ko`, model `enhanced`, diarization `speaker` + `prefer_current_speaker`(대화는 false, 등록은 true) + `speaker_sensitivity` 0.8 항상, partials 켜기, max_delay 2.0, `wss://global.rt.speechmatics.com/v2?jwt=...`
 - **Pleos 정책 유지**: 버튼으로만 시작, 오디오 포커스(GAIN_TRANSIENT, 잃으면 중지), `onPause`에서 중지, 매니페스트 `pleos.car.permission.STT_SERVICE`
 - **추가 의존성**: OkHttp 4.12.0, kotlinx-coroutines-android 1.9.0, (테스트) org.json 20180813
 - **미리보기 강제 실행**: `adb shell am start -n com.example.pleos/.MainActivity --es mode preview`. API 키가 없으면 자동으로 미리보기가 됩니다.

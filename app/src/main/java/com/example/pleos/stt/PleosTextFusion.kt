@@ -261,8 +261,7 @@ class PleosTextFusion(
                 break
             }
             pending.removeFirst()
-            val speaker = timeline.speakerFor(next.start, next.end) ?: timeline.latestSpeaker() ?: UNKNOWN
-            ready += Segment(next.id, speaker, next.text, next.start, next.end)
+            ready += attribute(next.id, next.text, next.start, next.end)
         }
         if (ready.isNotEmpty()) downstream.onFinal(ready)
     }
@@ -271,16 +270,27 @@ class PleosTextFusion(
     private fun emitPartial() {
         if (fallback) return
         val segments = ArrayList<Segment>()
-        for (item in pending) {
-            val speaker = timeline.speakerFor(item.start, item.end) ?: timeline.latestSpeaker() ?: UNKNOWN
-            segments += Segment("partial-${item.id}", speaker, item.text, item.start, item.end)
-        }
+        for (item in pending) segments += attribute("partial-${item.id}", item.text, item.start, item.end)
         if (partialText.isNotEmpty()) {
             val start = partialStart ?: audioSeconds
-            val speaker = timeline.speakerFor(start, audioSeconds) ?: timeline.latestSpeaker() ?: UNKNOWN
-            segments += Segment("partial-now", speaker, partialText, start, audioSeconds)
+            segments += attribute("partial-now", partialText, start, audioSeconds)
         }
         downstream.onPartial(segments)
+    }
+
+    /**
+     * Pleos 문장 하나에 화자를 붙입니다. 쉬지 않고 이어 말해 두 사람의 말이 한 문장으로 묶였으면,
+     * 화자 구분 시간표에서 말한 사람이 바뀐 곳을 찾아 문장을 나눕니다(띄어쓰기 자리에서).
+     */
+    private fun attribute(id: String, text: String, start: Double, end: Double): List<Segment> {
+        val turns = timeline.turns(start, end)
+        splitBySpeaker(text, start, end, turns)?.let { pieces ->
+            return pieces.mapIndexed { index, piece ->
+                Segment(if (index == 0) id else "$id-$index", piece.speaker, piece.text, piece.start, piece.end)
+            }
+        }
+        val speaker = timeline.speakerFor(start, end) ?: timeline.latestSpeaker() ?: UNKNOWN
+        return listOf(Segment(id, speaker, text, start, end))
     }
 
     /** 대화가 끝나면 남은 문장을 모두 내보내고 인식기를 닫습니다. */
@@ -300,7 +310,101 @@ class PleosTextFusion(
         recognizer?.release()
     }
 
+    data class Piece(val speaker: String, val text: String, val start: Double, val end: Double)
+
     companion object {
+        /** 이보다 짧게(초) 끼어든 화자는 따로 나누지 않습니다(맞장구, 화자 구분의 잠깐 흔들림). */
+        const val MIN_TURN_SECONDS = 0.5
+
+        /**
+         * 문장을 화자 순서([turns])대로 나눕니다. 나눌 자리는 띄어쓰기 자리 중에서, 앞뒤 조각이 각 화자의
+         * 화자 구분 글자와 가장 많이 겹치는 곳으로 고릅니다(두 글자씩 묶어 비교). 비교할 글자가 없거나
+         * 점수가 같으면 각 화자가 말한 글자 수(없으면 시간) 비율에 가까운 자리를 고릅니다.
+         * 한 사람만 말했거나 나눌 수 없으면 null.
+         */
+        fun splitBySpeaker(text: String, start: Double, end: Double, turns: List<SpeakerTimeline.Turn>): List<Piece>? {
+            val kept = ArrayList<SpeakerTimeline.Turn>()
+            for (turn in turns) {
+                if (turn.seconds < MIN_TURN_SECONDS) continue
+                val last = kept.lastOrNull()
+                if (last != null && last.speaker == turn.speaker) {
+                    kept[kept.size - 1] = last.copy(
+                        end = turn.end,
+                        seconds = last.seconds + turn.seconds,
+                        chars = last.chars + turn.chars,
+                        text = "${last.text} ${turn.text}".trim(),
+                    )
+                } else {
+                    kept += turn
+                }
+            }
+            if (kept.size < 2) return null
+            val words = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (words.size < kept.size) return null
+            val useChars = kept.all { it.chars > 0 }
+            val weights = kept.map { if (useChars) it.chars else it.seconds }
+            val total = weights.sum()
+            if (total <= 0) return null
+            val letters = words.map { word -> word.count { it.isLetterOrDigit() } }
+            val allLetters = letters.sum().coerceAtLeast(1)
+
+            val cuts = ArrayList<Int>() // 각 조각이 끝나는 단어 위치(그 앞까지)
+            var from = 0
+            var weightSum = 0.0
+            for (i in 0 until kept.size - 1) {
+                weightSum += weights[i]
+                val target = allLetters * weightSum / total
+                val restText = kept.drop(i + 1).joinToString(" ") { it.text }
+                val lastCut = words.size - (kept.size - 1 - i)
+                var best = -1
+                var bestScore = -1
+                var bestDistance = Double.MAX_VALUE
+                for (cut in from + 1..lastCut) {
+                    val score = overlap(words.subList(from, cut), kept[i].text) + overlap(words.subList(cut, words.size), restText)
+                    val distance = kotlin.math.abs(letters.subList(0, cut).sum() - target)
+                    if (score > bestScore || (score == bestScore && distance < bestDistance)) {
+                        best = cut
+                        bestScore = score
+                        bestDistance = distance
+                    }
+                }
+                if (best < 0) return null
+                cuts += best
+                from = best
+            }
+            val pieces = ArrayList<Piece>()
+            from = 0
+            for ((i, turn) in kept.withIndex()) {
+                val to = if (i < cuts.size) cuts[i] else words.size
+                val pieceStart = if (i == 0) start else turn.start
+                val pieceEnd = if (i == kept.size - 1) end else turn.end
+                pieces += Piece(turn.speaker, words.subList(from, to).joinToString(" "), pieceStart, pieceEnd)
+                from = to
+            }
+            return pieces
+        }
+
+        /** 두 글을 두 글자씩 묶어 겹치는 묶음 수를 셉니다(띄어쓰기·문장부호는 뺌). */
+        private fun overlap(words: List<String>, reference: String): Int {
+            if (reference.isBlank() || words.isEmpty()) return 0
+            val counts = HashMap<String, Int>()
+            for (pair in bigrams(reference)) counts[pair] = (counts[pair] ?: 0) + 1
+            var shared = 0
+            for (pair in bigrams(words.joinToString(""))) {
+                val left = counts[pair] ?: 0
+                if (left > 0) {
+                    shared++
+                    counts[pair] = left - 1
+                }
+            }
+            return shared
+        }
+
+        private fun bigrams(text: String): List<String> {
+            val letters = text.filter { it.isLetterOrDigit() }
+            return (0 until letters.length - 1).map { letters.substring(it, it + 2) }
+        }
+
         private const val BYTES_PER_SECOND = SpeechmaticsSession.SAMPLE_RATE * 2.0
         /** 첫 중간 결과는 말을 시작하고 이만큼(초) 뒤에 옵니다. */
         private const val FIRST_PARTIAL_LAG = 0.8

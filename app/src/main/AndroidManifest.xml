@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="pleos.car.permission.STT_SERVICE" />
+    <!-- 빠른 답장을 차량 스피커로 읽어 줍니다 -->
+    <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
     <!-- Pleos 차량 정보 (모두 normal 권한) -->
     <!-- 좌석에 앉은 사람 수: "탑승 N명" -->
     <uses-permission android:name="pleos.car.permission.CAR_SEATS" />
@@ -42,6 +44,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 주행 중에도 자막을 볼 수 있게 합니다(차량 시스템이 주행 중 화면을 막지 않음). -->
+            <meta-data android:name="distractionOptimized" android:value="true" />
         </activity>
 
         <!-- 처음 실행할 때 한 번 보여 주는 소개 -->
@@ -56,7 +60,10 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing"
-            android:theme="@style/Theme.Pleos.Voium.Sheet" />
+            android:theme="@style/Theme.Pleos.Voium.Sheet">
+            <!-- 주행 중에도 열리되, 편집·등록·지난 대화 보기는 앱이 직접 막습니다(Figma '주행 중' 화면). -->
+            <meta-data android:name="distractionOptimized" android:value="true" />
+        </activity>
 
         <activity
             android:name=".VoiceEnrollmentActivity"

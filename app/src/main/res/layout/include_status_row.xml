@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   자막 화면 위쪽의 상단 바 (Figma status_row 243:4249, 261:4281). x=120 y=48 폭 1460.
-  왼쪽 state: 상태 점 · 상태 글자(듣는 중 초록 / 대기 회색 / 오류 빨강) · "· 탑승 3명"
+  왼쪽 state: 상태 점 · 상태 글자(듣는 중 초록 / 대기 회색 / 오류 빨강). 탑승 인원은 화면에 보이지 않고 내부에서만 씁니다.
   오른쪽 tools: 도움말 · 설정(배경 없는 72dp 원형 버튼) · 16dp 띄우고 대화 종료(진한 알약, 듣는 중·오류일 때만)
   모양은 StatusRow가 상태에 맞춰 바꿉니다.
 -->
@@ -44,17 +44,6 @@
             android:textSize="30sp"
             tools:text="듣는 중" />
 
-        <TextView
-            android:id="@+id/passengers_label"
-            style="@style/Voium.Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:importantForAccessibility="no"
-            android:textColor="@color/voium_hint"
-            android:textFontWeight="700"
-            android:textSize="28sp"
-            tools:text="· 탑승 3명" />
     </LinearLayout>
 
     <Space

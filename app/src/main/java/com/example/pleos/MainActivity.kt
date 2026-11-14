@@ -23,6 +23,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.graphics.Color
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -40,6 +41,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.example.pleos.ai.ReplyAi
+import com.example.pleos.ai.ReplySpeaker
+import com.example.pleos.ai.SuggestionAi
 import com.example.pleos.car.CarSignals
 import com.example.pleos.history.ConversationHistoryStore
 import com.example.pleos.history.ConversationRecord
@@ -103,6 +107,9 @@ class MainActivity : AppCompatActivity() {
     private val statusButton get() = statusRow.statusButton
     private val statusIcon get() = statusRow.statusIcon
     private lateinit var previousLines: LinearLayout
+    private lateinit var previousScroll: android.widget.ScrollView
+    /** 손님이 지난 대화를 끌어 올려 보는 중이면, 잠시 새 줄을 따라 내려가지 않습니다. */
+    private var previousDraggedAt = 0L
     private lateinit var currentCaption: View
     private lateinit var speakerPill: View
     private lateinit var speakerPillLabel: TextView
@@ -115,6 +122,42 @@ class MainActivity : AppCompatActivity() {
     private lateinit var suggestionDots: LinearLayout
     private lateinit var suggestionIcon: ImageView
     private lateinit var suggestionContextRow: View
+    private lateinit var quickReplyBar: View
+    private lateinit var quickReplies: LinearLayout
+
+    // 빠른 답장: 누르면 차량 스피커로 읽고(Pleos TTS), 다른 사람이 물으면 AI가 답장 3개를 추천합니다.
+    private var replySpeaking: String? = null
+    /** 다 읽은 뒤 스피커 소리의 끝자락(울림)이 마이크에 잡히지 않도록 잠시 더 무음으로 둡니다. */
+    private var replyEchoHold = false
+    private val releaseEchoHold = Runnable {
+        replyEchoHold = false
+        updateMicMute()
+    }
+    private var replyState = ReplyAi.State.NONE
+    /** 들어오며 움직인 추천 묶음(같은 묶음은 다시 그려도 움직이지 않음) */
+    private var animatedReplies: List<String>? = null
+    private val replySpeaker by lazy {
+        ReplySpeaker(this, object : ReplySpeaker.Listener {
+            override fun onSpeakingChanged(text: String?) {
+                replySpeaking = text
+                handler.removeCallbacks(releaseEchoHold)
+                if (text == null) {
+                    replyEchoHold = true
+                    handler.postDelayed(releaseEchoHold, REPLY_ECHO_HOLD_MS)
+                }
+                // 읽는 동안에는 그 소리가 다시 자막이 되지 않게 마이크 입력을 무음으로 둡니다.
+                updateMicMute()
+                renderQuickReplies()
+            }
+        })
+    }
+    private val replyAi by lazy {
+        ReplyAi(this) { state ->
+            replyState = state
+            renderQuickReplies()
+        }
+    }
+    private var quickReplyCount = 0
     private lateinit var notice: TextView
     private lateinit var startPanel: View
     private lateinit var errorPanel: View
@@ -221,6 +264,7 @@ class MainActivity : AppCompatActivity() {
     // 대화 제안
     private var suggestionIndex = 0
     private var suggestionShowing = false
+    private var lastTopic: String? = null
     private var suggestionRotating = false
     private val rotateSuggestion = object : Runnable {
         override fun run() {
@@ -247,7 +291,6 @@ class MainActivity : AppCompatActivity() {
 
     // Pleos 차량 정보: 좌석 수가 바뀌면 탑승 인원을, 내비 목적지가 바뀌면 대화 제안을 다시 그립니다.
     private val carListener = CarSignals.Listener {
-        renderPassengers(visibleTurns())
         // 대화 제안(내비 목적지·비)을 다시 그립니다.
         renderStatus()
         if (suggestion.visibility == View.VISIBLE && !isAudioPaused()) renderSuggestion(animate = false)
@@ -317,7 +360,6 @@ class MainActivity : AppCompatActivity() {
         errorButton.setOnClickListener { onErrorAction() }
         findViewById<View>(R.id.help_close).setOnClickListener { showHelp(false) }
         helpOverlay.setOnClickListener { showHelp(false) }
-        findViewById<View>(R.id.help_vehicle_settings).setOnClickListener { openVehicleSettings() }
         bindHelpSteps()
         onBackPressedDispatcher.addCallback(this, helpBack)
         findViewById<View>(R.id.guest_close).setOnClickListener {
@@ -351,6 +393,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (BuildConfig.DEBUG) registerDebugReplyReceiver()
         // 설정에서 이름·색을 바꾸거나 지웠을 수 있어 다시 읽습니다.
         speakerDirectory.setProfiles(if (isPreview) PREVIEW_PROFILES else profileStore.load())
         ambientLight = prefs.getBoolean(SettingsActivity.KEY_AMBIENT_LIGHT, true)
@@ -367,6 +410,8 @@ class MainActivity : AppCompatActivity() {
     // 백그라운드로 전환되면 마이크를 멈춥니다. (Pleos 정책)
     override fun onPause() {
         super.onPause()
+        debugReplyReceiver?.let { unregisterReceiver(it) }
+        debugReplyReceiver = null
         if (isLive()) stopLive()
         stopSuggestionRotation()
         handler.removeCallbacks(micRetry)
@@ -386,6 +431,7 @@ class MainActivity : AppCompatActivity() {
         CarSignals.removeListener(carListener)
         CarSignals.setCabinColor(null)
         orbColorAnimator?.cancel()
+        replySpeaker.release()
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -417,6 +463,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startLive() {
+        // 빠른 답장·대화 제안의 첫 AI 요청이 늦지 않게 연결을 미리 준비합니다.
+        com.example.pleos.ai.TextAi.warmUp()
         if (isLive() || phase == Phase.STOPPING) return
         stopPreview()
         isPreview = false
@@ -469,6 +517,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     transcript.addFinal(segments)
                     renderTurns()
+                    onHeardForReplies(segments)
                 }
 
                 override fun onPartial(segments: List<Segment>) {
@@ -503,6 +552,8 @@ class MainActivity : AppCompatActivity() {
                         voiceOrb.setLevel(0f)
                     }
                     if (state == SpeechmaticsSession.State.STOPPED) {
+                        replySpeaker.stop()
+                        replyAi.clear()
                         transcript.clearPartial()
                         releaseAudioFocus()
                         session = null
@@ -598,10 +649,15 @@ class MainActivity : AppCompatActivity() {
         val pausing = inCall || focusPaused
         val wasPaused = pausedForAudio
         pausedForAudio = pausing
-        session?.setPaused(pausing)
+        updateMicMute()
         if (pausing && !wasPaused) pauseReason()?.let { showNotice(getString(it)) }
         renderStatus()
         renderTurns()
+    }
+
+    /** 통화 등으로 멈췄거나 빠른 답장을 읽는 중이면 마이크 입력을 무음으로 보냅니다. */
+    private fun updateMicMute() {
+        session?.setPaused(pausedForAudio || replySpeaking != null || replyEchoHold)
     }
 
     private fun isInCall(): Boolean = audioManager.mode == AudioManager.MODE_IN_CALL ||
@@ -743,7 +799,7 @@ class MainActivity : AppCompatActivity() {
         if (show) helpOverlay.findViewById<View>(R.id.help_close).requestFocus()
     }
 
-    /** 도움말 단계: 번호 원(52dp) + 설명(30sp), 회색 바탕 줄 (Figma 217:4273) */
+    /** 도움말 단계: 번호 원(52dp) + 설명(30sp), 바탕 없는 줄 (Figma 217:4277) */
     private fun bindHelpSteps() {
         val steps = findViewById<LinearLayout>(R.id.help_steps)
         listOf(R.string.help_step_1, R.string.help_step_2, R.string.help_step_3, R.string.help_step_4)
@@ -751,8 +807,7 @@ class MainActivity : AppCompatActivity() {
                 val row = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = Gravity.CENTER_VERTICAL
-                    setBackgroundResource(R.drawable.bg_help_step)
-                    setPadding(dp(28), dp(18), dp(28), dp(18))
+                    setPadding(0, dp(10), 0, dp(10))
                 }
                 val number = TextView(this, null, 0, R.style.Voium_Text).apply {
                     this.text = (index + 1).toString()
@@ -776,11 +831,6 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    /** 운전대 ★ 버튼 연결은 차량 설정에서 합니다. 차량 설정 화면을 따로 알 수 없어 시스템 설정을 엽니다. */
-    private fun openVehicleSettings() {
-        runCatching { startActivity(Intent(Settings.ACTION_SETTINGS)) }
-    }
-
     // ---------------------------------------------------------------- 자막 렌더링
 
     /**
@@ -795,7 +845,12 @@ class MainActivity : AppCompatActivity() {
                 ?: name.colorIndex?.let { SpeakerThemes.ALL[it.mod(SpeakerThemes.ALL.size)] }
                 ?: SpeakerThemes.GUEST
         } else {
-            SpeakerThemes.GUEST
+            // 등록하지 않은 사람("화자 1", "나")도 서로 다른 색으로 구분합니다. 등록된 사람의 색은 피합니다.
+            name.colorIndex?.let { index ->
+                val taken = speakerDirectory.enrolledColorKeys()
+                val palette = SpeakerThemes.ALL.filter { it.key !in taken }.ifEmpty { SpeakerThemes.ALL }
+                palette[index.mod(palette.size)]
+            } ?: SpeakerThemes.GUEST
         }
         return SpeakerVisual(name.label, name.isEnrolled, theme)
     }
@@ -809,11 +864,10 @@ class MainActivity : AppCompatActivity() {
     private fun renderTurns() {
         // 대기·오류·일시 정지 화면에서는 자막을 숨깁니다.
         val showCaptions = captionsVisible()
-        previousLines.visibility = if (showCaptions) View.VISIBLE else View.GONE
+        previousScroll.visibility = if (showCaptions) View.VISIBLE else View.GONE
         if (!showCaptions) {
             currentCaption.visibility = View.GONE
             renderEmptyState(true)
-            renderPassengers(visibleTurns())
             updateAtmosphere()
             return
         }
@@ -852,7 +906,6 @@ class MainActivity : AppCompatActivity() {
         shownTurnCount = maxOf(shownTurnCount, turns.size)
 
         renderEmptyState(turns.isEmpty())
-        renderPassengers(turns)
         updateAtmosphere(turns)
     }
 
@@ -925,14 +978,32 @@ class MainActivity : AppCompatActivity() {
                 else -> riseIn(row.root, toAlpha = targetAlpha, distanceDp = 20)
             }
             lineTurnIds[index] = turn.id
-            VoiumUi.bindSpeakerTag(row.tag, row.tagDot, row.tagLabel, visual.theme.takeIf { visual.isRegistered }, visual.label)
+            VoiumUi.bindSpeakerTag(row.tag, row.tagDot, row.tagLabel, visual.theme.takeIf { it != SpeakerThemes.GUEST }, visual.label)
             val text = turn.text.trim()
             if (row.text.text.toString() != text) row.text.text = text
             val time = timeOf(turn)
             row.time.text = time
             row.root.contentDescription = "${visual.label}: $text, $time"
         }
+        followPreviousLines(smooth = animate)
     }
+
+    /** 새 줄이 생기면 맨 아래(가장 최근)로 내려갑니다. 손님이 방금 끌어 올려 보는 중이면 기다립니다. */
+    private fun followPreviousLines(smooth: Boolean) {
+        val idleFor = SystemClock.uptimeMillis() - previousDraggedAt
+        if (idleFor < PREVIOUS_FOLLOW_DELAY_MS) {
+            handler.removeCallbacks(followPrevious)
+            handler.postDelayed(followPrevious, PREVIOUS_FOLLOW_DELAY_MS - idleFor)
+            return
+        }
+        previousScroll.post {
+            val bottom = (previousLines.height - previousScroll.height).coerceAtLeast(0)
+            if (previousScroll.scrollY == bottom) return@post
+            if (smooth && areAnimationsEnabled()) previousScroll.smoothScrollTo(0, bottom) else previousScroll.scrollTo(0, bottom)
+        }
+    }
+
+    private val followPrevious = Runnable { followPreviousLines(smooth = true) }
 
     /** 문단이 처음 화면에 나타난 시각("오후 12:41") */
     private fun timeOf(turn: Turn): String =
@@ -1065,10 +1136,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** 대화에 나온 사람 수입니다. 아직 아무도 말하지 않았으면 숫자 없이 보여 줍니다. */
-    private fun renderPassengers(turns: List<Turn>) {
-        statusRow.setPassengers(passengerCount(turns))
-    }
-
     // ---------------------------------------------------------------- 대화 없음
 
     /** 자막을 보여 주는 상태: 듣는 중(연결 중·다시 연결 중 포함)·마무리 중·미리보기. 멈춘 동안은 숨깁니다. */
@@ -1094,8 +1161,8 @@ class MainActivity : AppCompatActivity() {
             renderPauseMessage()
         } else if (showSuggestion) {
             if (!suggestionRotating) {
-                renderSuggestion(animate = false)
                 startSuggestionRotation()
+                renderSuggestion(animate = false)
             }
         } else {
             stopSuggestionRotation()
@@ -1132,15 +1199,42 @@ class MainActivity : AppCompatActivity() {
      */
     private fun renderSuggestion(animate: Boolean) {
         val now = Calendar.getInstance()
+        val hour = now.get(Calendar.HOUR_OF_DAY)
         val time = SimpleDateFormat("a h:mm", Locale.KOREAN).format(now.time)
         val trip = CarSignals.trip?.let { it.place to it.remainSeconds }
-        val probe = ConversationStarters.cards(now.get(Calendar.HOUR_OF_DAY), time, trip, CarSignals.raining == true, 0)
-        val count = probe.size
-        val position = suggestionIndex.mod(count)
-        val round = suggestionIndex / count
-        val card = ConversationStarters.cards(now.get(Calendar.HOUR_OF_DAY), time, trip, CarSignals.raining == true, round)[position]
-        suggestionDots.visibility = View.VISIBLE
-        if (count > 1) renderSuggestionDots(count, position) else renderSuggestionDots(SUGGESTION_QUESTIONS, round.mod(SUGGESTION_QUESTIONS))
+        val raining = CarSignals.raining == true
+        // 차량 정보로 Gleo AI에 지금 상황에 맞는 질문을 요청합니다. 받기 전에는 기본 질문을 씁니다.
+        val situation = SuggestionAi.Situation(
+            timeText = time,
+            slotLabel = ConversationStarters.slotFor(hour).label,
+            parked = CarSignals.isParked,
+            passengers = CarSignals.occupiedSeats,
+            trip = trip,
+            raining = raining,
+            lastTopic = lastTopic,
+        )
+        // 시연용(디버그): 고정한 제안 하나만 넘기지 않고 보여 줍니다. DebugCarReceiver --es suggest 참고.
+        val demo = if (BuildConfig.DEBUG) getSharedPreferences("debug_demo", MODE_PRIVATE).getString("suggestion", null) else null
+        val card = if (demo != null) {
+            val place = trip?.let { ConversationStarters.forTrip(it.first, it.second) }
+            ConversationStarters.Card(
+                kind = if (place != null) ConversationStarters.Kind.PLACE else ConversationStarters.Kind.TIME,
+                label = place?.label ?: "$time · ${ConversationStarters.slotFor(hour).label}",
+                question = demo,
+            )
+        } else {
+            val ai = SuggestionAi.questions(this, situation)
+            SuggestionAi.refresh(this, situation) { if (suggestionShowing) renderSuggestion(animate = true) }
+            val count = ConversationStarters.cards(hour, time, trip, raining, 0, ai).size
+            val position = suggestionIndex.mod(count)
+            val round = suggestionIndex / count
+            ConversationStarters.cards(hour, time, trip, raining, round, ai)[position].also {
+                if (count > 1) renderSuggestionDots(count, position) else renderSuggestionDots(it.questionCount, it.questionIndex)
+            }
+        }
+        suggestionDots.visibility = if (demo != null) View.GONE else View.VISIBLE
+        // 같은 문장이면 밀어 넘기지 않습니다(시연용 고정 제안).
+        if (demo != null && suggestionText.text.toString() == card.question && suggestionContext.text.toString() == card.label) return
 
         val apply = {
             suggestionIcon.setImageResource(
@@ -1195,6 +1289,10 @@ class MainActivity : AppCompatActivity() {
     private fun startSuggestionRotation() {
         if (suggestionRotating) return
         suggestionRotating = true
+        // 사흘 안에 나눈 지난 대화가 있으면 그 주제를 대화 제안에 이어 씁니다.
+        lastTopic = historyStore.load().firstOrNull()
+            ?.takeIf { System.currentTimeMillis() - it.endedAt < LAST_TOPIC_MS }
+            ?.headline
         handler.postDelayed(rotateSuggestion, SUGGESTION_INTERVAL_MS)
     }
 
@@ -1322,7 +1420,8 @@ class MainActivity : AppCompatActivity() {
     /** 탑승 인원: 좌석 센서(Pleos Seat)를 쓸 수 있으면 앉은 사람 수, 아니면 대화에 나온 사람 수 */
     private fun passengerCount(turns: List<Turn>) =
         CarSignals.occupiedSeats
-            ?: turns.asSequence().map { it.speaker }.filter { it != SpeakerDirectory.UNKNOWN }.toSet().size
+            ?: turns.asSequence().map { it.speaker }
+                .filter { it != SpeakerDirectory.UNKNOWN && it != SpeakerDirectory.QUICK_REPLY }.toSet().size
 
     /** 설정을 엽니다. 지금 대화에 나온 등록된 사람은 설정에서 "지금 탑승 중"으로 보여 줍니다. */
     private fun openSettings() {
@@ -1355,7 +1454,7 @@ class MainActivity : AppCompatActivity() {
             RecordLine(
                 at = turnTimes[turn.id] ?: System.currentTimeMillis(),
                 speaker = visual.label,
-                colorKey = if (visual.isRegistered) visual.theme.key else null,
+                colorKey = visual.theme.key.takeIf { visual.theme != SpeakerThemes.GUEST },
                 text = turn.finalText.trim(),
             )
         }
@@ -1404,6 +1503,182 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    // ---------------------------------------------------------------- 빠른 답장
+
+    /** 다른 사람의 말이 확정되면 AI 답장 추천을 부탁합니다(질문·부탁일 때만, ReplyAi가 거릅니다). */
+    private fun onHeardForReplies(segments: List<Segment>) {
+        val heard = segments.filter { it.speaker != SpeakerDirectory.QUICK_REPLY }
+        if (heard.isEmpty() || isPreview) return
+        val text = heard.filter { it.speaker == heard.last().speaker }.joinToString(" ") { it.text.trim() }
+        // 앞 대화는 넉넉히 넘기고, 줄 수·글자 수 상한은 ReplyAi가 맞춥니다.
+        val context = transcript.getTurns().filter { it.finalText.isNotBlank() }.dropLast(1).takeLast(ReplyAi.CONTEXT_LINES)
+            .map { speakerDirectory.line(it.speaker, it.finalText.takeLast(ReplyAi.LINE_CHARS)) }
+        replyAi.onHeard(text, context, lastTopic, asker = heard.last().speaker)
+    }
+
+    private fun quickRepliesVisible() = isLive() && phase == Phase.RECORDING && !isAudioPaused() && !isPreview
+
+    /**
+     * 빠른 답장 줄: [물은 사람 · 스피너 "답장 고르는 중" | "에게 답장"] [✦ AI 추천 3개].
+     * 다른 사람이 물었을 때만 보입니다. 읽는 중인 칩은 진하게, 누르면 멈춥니다. 새 추천은 아래에서 위로 올라옵니다.
+     */
+    private fun renderQuickReplies() {
+        if (!::quickReplies.isInitialized) return
+        val ai = replyState.replies
+        // 읽는 중인 문장이 목록에 없으면(추천을 눌러 추천이 지워진 경우) 진한 칩으로 남겨 둡니다. 누르면 멈춥니다.
+        val speakingExtra = replySpeaking?.takeIf { speaking -> ai.none { it.replace('\n', ' ').trim() == speaking } }
+        val visible = quickRepliesVisible() && (replyState.question != null || speakingExtra != null)
+        quickReplyBar.visibility = if (visible) View.VISIBLE else View.GONE
+        if (!visible) return
+        val animateAi = ai.isNotEmpty() && ai != animatedReplies && areAnimationsEnabled()
+        if (ai.isNotEmpty()) animatedReplies = ai
+        if (replyState.question == null) animatedReplies = null
+
+        quickReplies.removeAllViews()
+        if (replyState.question != null) quickReplies.addView(replyHeader(), LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT,
+        ).apply { marginEnd = dp(24) })
+        var index = 0
+        fun add(view: View, aiChip: Boolean) {
+            quickReplies.addView(view, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(88)).apply {
+                if (index > 0) marginStart = dp(16)
+            })
+            if (aiChip && animateAi) {
+                // 아래에서 위로 차례로 올라옵니다.
+                view.alpha = 0f
+                view.translationY = dp(40).toFloat()
+                view.animate().alpha(1f).translationY(0f).setStartDelay(index * 80L).setDuration(300)
+                    .setInterpolator(easeOut).start()
+            }
+            index++
+        }
+        speakingExtra?.let { add(replyChip(it, fromAi = false), aiChip = false) }
+        ai.forEach { add(replyChip(it, fromAi = true), aiChip = true) }
+        if (animateAi) quickReplyBar.post { (quickReplyBar as android.widget.HorizontalScrollView).smoothScrollTo(0, 0) }
+    }
+
+    /** 물은 사람 이름(그 사람 색) 옆에, 고르는 동안은 작은 스피너와 "답장 고르는 중", 다 고르면 "에게 답장" */
+    private fun replyHeader(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        val asker = replyState.asker?.let { speakerVisual(it, commit = false) }
+        val accent = asker?.theme?.takeIf { it != SpeakerThemes.GUEST }?.color ?: color(R.color.voium_text_secondary)
+        contentDescription = getString(
+            if (replyState.loading) R.string.quick_reply_loading_description else R.string.quick_reply_ready_description,
+            asker?.label ?: "",
+        )
+        if (asker != null) addView(TextView(context, null, 0, R.style.Voium_Text).apply {
+            text = asker.label
+            textSize = 28f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setTextColor(accent)
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        })
+        if (replyState.loading) {
+            addView(android.widget.ProgressBar(context, null, android.R.attr.progressBarStyleSmall).apply {
+                isIndeterminate = true
+                indeterminateTintList = android.content.res.ColorStateList.valueOf(accent)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }, LinearLayout.LayoutParams(dp(28), dp(28)).apply { marginStart = dp(14); marginEnd = dp(10) })
+        }
+        addView(TextView(context, null, 0, R.style.Voium_Text).apply {
+            setText(if (replyState.loading) R.string.quick_reply_loading else R.string.quick_reply_ready)
+            textSize = 28f
+            setTextColor(color(R.color.voium_hint))
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        })
+    }
+
+    // 디버그 빌드 시연용: adb로 빠른 답장 칩을 누릅니다(DebugCarReceiver --es reply ai1 | 1).
+    private var debugReplyReceiver: android.content.BroadcastReceiver? = null
+
+    private fun registerDebugReplyReceiver() {
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val which = intent.getStringExtra(EXTRA_DEBUG_REPLY) ?: return
+                val ai = which.startsWith("ai")
+                val n = which.removePrefix("ai").toIntOrNull() ?: 1
+                val chips = (0 until quickReplies.childCount).map { quickReplies.getChildAt(it) }
+                    .filter { it.isClickable && it.contentDescription != null }
+                    .filter { chip ->
+                        val desc = chip.contentDescription.toString()
+                        if (ai) desc.startsWith(getString(R.string.quick_reply_ai_description, "").trimEnd())
+                        else !desc.startsWith(getString(R.string.quick_reply_ai_description, "").trimEnd())
+                    }
+                chips.getOrNull(n - 1)?.let { chip ->
+                    // 누른 것처럼 물결 효과를 보여 준 뒤 누릅니다.
+                    chip.isPressed = true
+                    handler.postDelayed({ chip.isPressed = false; chip.performClick() }, 180)
+                }
+            }
+        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            this, receiver, android.content.IntentFilter(ACTION_DEBUG_REPLY), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+        debugReplyReceiver = receiver
+    }
+
+    private fun replyChip(text: String, fromAi: Boolean): View {
+        val speakingThis = replySpeaking == text.replace('\n', ' ').trim()
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(if (fromAi) 28 else 36), 0, dp(36), 0)
+            setBackgroundResource(
+                when {
+                    speakingThis -> R.drawable.bg_reply_speaking
+                    fromAi -> R.drawable.bg_reply_ai
+                    else -> R.drawable.bg_chip_outline
+                },
+            )
+            isClickable = true
+            isFocusable = true
+            contentDescription = getString(
+                when {
+                    speakingThis -> R.string.quick_reply_stop_description
+                    fromAi -> R.string.quick_reply_ai_description
+                    else -> R.string.quick_reply_ai_description
+                },
+                text,
+            )
+            if (fromAi && !speakingThis) {
+                addView(ImageView(context).apply {
+                    setImageResource(R.drawable.ic_ai_spark)
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }, LinearLayout.LayoutParams(dp(28), dp(28)).apply { marginEnd = dp(10) })
+            }
+            addView(TextView(context, null, 0, R.style.Voium_Text).apply {
+                this.text = text
+                textSize = 32f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                maxLines = 1
+                setTextColor(
+                    when {
+                        speakingThis -> Color.WHITE
+                        fromAi -> 0xFF1E3FAE.toInt()
+                        else -> color(R.color.voium_text_primary)
+                    },
+                )
+            })
+            setOnClickListener { onQuickReply(text) }
+        }
+    }
+
+    /** 칩을 누르면: 읽는 중인 칩이면 멈추고, 아니면 읽고 자막·대화 기록에 "나 · 빠른 답장"으로 남깁니다. */
+    private fun onQuickReply(text: String) {
+        val clean = text.replace('\n', ' ').trim()
+        if (replySpeaking == clean) {
+            replySpeaker.stop()
+            return
+        }
+        replySpeaker.speak(clean)
+        val at = transcript.getTurns().lastOrNull()?.end ?: 0.0
+        transcript.addFinal(listOf(Segment("qr-${quickReplyCount++}", SpeakerDirectory.QUICK_REPLY, clean, at, at)))
+        // 답했으니 추천은 지우고 기본 답장만 남깁니다.
+        replyAi.clear()
+        renderTurns()
+    }
+
     private fun renderStatus() {
         val paused = isAudioPaused()
         val kind = errorKind()
@@ -1432,6 +1707,7 @@ class MainActivity : AppCompatActivity() {
         renderErrorPanel(kind)
         applyOrbMode()
         renderEmptyState(visibleTurns().isEmpty())
+        renderQuickReplies()
         updateAtmosphere()
     }
 
@@ -1498,6 +1774,13 @@ class MainActivity : AppCompatActivity() {
         voiceOrb.sensitivity = AppMicSensitivity
         statusRow = StatusRow(this)
         previousLines = findViewById(R.id.previous_lines)
+        previousScroll = findViewById(R.id.previous_scroll)
+        previousScroll.setOnTouchListener { _, event ->
+            if (event.actionMasked == android.view.MotionEvent.ACTION_MOVE || event.actionMasked == android.view.MotionEvent.ACTION_DOWN) {
+                previousDraggedAt = SystemClock.uptimeMillis()
+            }
+            false
+        }
         currentCaption = findViewById(R.id.current_caption)
         speakerPill = findViewById(R.id.speaker_pill)
         speakerPill.background = pill(SpeakerThemes.GUEST.color)
@@ -1511,6 +1794,8 @@ class MainActivity : AppCompatActivity() {
         suggestionDots = findViewById(R.id.suggestion_dots)
         suggestionIcon = findViewById(R.id.suggestion_icon)
         suggestionContextRow = findViewById(R.id.suggestion_context_row)
+        quickReplyBar = findViewById(R.id.quick_reply_bar)
+        quickReplies = findViewById(R.id.quick_replies)
         notice = findViewById(R.id.notice)
         startPanel = findViewById(R.id.start_panel)
         errorPanel = findViewById(R.id.error_panel)
@@ -1564,7 +1849,10 @@ class MainActivity : AppCompatActivity() {
         const val KEY_FINAL_ONLY = "final_only"
 
         /** 지금 문단 위에 남겨 두는 지난 문단 수 (Figma previous_lines) */
-        const val MAX_PREVIOUS_LINES = 3
+        /** 위에 쌓아 두는 지난 문단 수(끌어 올려 볼 수 있음). 화면에는 약 세 줄이 보입니다. */
+        const val MAX_PREVIOUS_LINES = 100
+        /** 지난 대화를 끌어 올린 뒤 이만큼 손을 떼고 있으면 다시 최근 줄로 내려갑니다. */
+        const val PREVIOUS_FOLLOW_DELAY_MS = 6_000L
 
         /** 지난 문단 진하기: 가장 최근 줄부터 (Figma previous_lines) */
         val LINE_ALPHAS = floatArrayOf(0.9f, 0.75f, 0.45f)
@@ -1589,8 +1877,12 @@ class MainActivity : AppCompatActivity() {
         /** 대화 제안 카드가 밀려 나가고 들어오는 거리와 시간 */
         const val SUGGESTION_SLIDE_DP = 120
         const val SUGGESTION_SLIDE_MS = 260L
-        /** 시간대마다 준비한 질문 수(카드가 한 장일 때 점 개수) */
-        const val SUGGESTION_QUESTIONS = 3
+        /** 이 시간 안에 나눈 지난 대화의 주제만 대화 제안에 씁니다(사흘). */
+        const val LAST_TOPIC_MS = 3 * 24 * 60 * 60_000L
+        /** 빠른 답장을 다 읽은 뒤 마이크를 더 막아 두는 시간(스피커 울림) */
+        const val REPLY_ECHO_HOLD_MS = 500L
+        const val ACTION_DEBUG_REPLY = "com.example.pleos.DEBUG_QUICK_REPLY"
+        const val EXTRA_DEBUG_REPLY = "reply"
         const val SUGGESTION_INTERVAL_MS = 5_000L
 
         /**

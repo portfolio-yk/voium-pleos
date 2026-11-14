@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 빠른 답장: AI 추천 칩 (옅은 파랑 바탕, ✦ 아이콘과 함께) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#1F3D6BF0">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <solid android:color="#FFEAF0FF" />
+            <stroke android:width="2dp" android:color="#FFC4D3FB" />
+        </shape>
+    </item>
+</ripple>

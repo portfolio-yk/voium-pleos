@@ -29,15 +29,30 @@
 
         <include layout="@layout/include_status_row" />
 
-        <!-- previous_lines: 지난 세 문단. 오래된 줄일수록 흐립니다. -->
-        <LinearLayout
-            android:id="@+id/previous_lines"
+        <!--
+          previous_lines: 지난 문단들. 최근 줄이 큰 자막 바로 위에 붙고, 오래된 줄일수록 흐립니다.
+          손가락으로 끌어 위로 올리면 이번 대화의 앞부분을 볼 수 있습니다(새 줄이 오면 다시 아래로 따라감).
+        -->
+        <ScrollView
+            android:id="@+id/previous_scroll"
             android:layout_width="1100dp"
-            android:layout_height="wrap_content"
+            android:layout_height="254dp"
             android:layout_marginStart="120dp"
             android:layout_marginTop="192dp"
-            android:alpha="0.9"
-            android:orientation="vertical" />
+            android:fadingEdgeLength="56dp"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:requiresFadingEdge="vertical"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/previous_lines"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.9"
+                android:gravity="bottom"
+                android:orientation="vertical" />
+        </ScrollView>
 
         <!-- current_caption -->
         <LinearLayout
@@ -46,7 +61,7 @@
             android:layout_height="match_parent"
             android:layout_marginStart="120dp"
             android:layout_marginTop="470dp"
-            android:layout_marginBottom="80dp"
+            android:layout_marginBottom="200dp"
             android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="visible">
@@ -174,6 +189,33 @@
                 android:importantForAccessibility="no"
                 android:orientation="horizontal" />
         </LinearLayout>
+
+        <!--
+          빠른 답장: 듣는 중에 화면 아래에 보입니다. 누르면 차량 스피커로 읽어 주고 자막에 "나 · 빠른 답장"으로 남깁니다.
+          다른 사람이 묻는 말을 하면 AI가 고른 답장(✦)이 앞에 붙습니다. 칩은 MainActivity가 그립니다.
+        -->
+        <HorizontalScrollView
+            android:id="@+id/quick_reply_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="56dp"
+            android:clipToPadding="false"
+            android:fadingEdgeLength="64dp"
+            android:paddingStart="120dp"
+            android:paddingEnd="120dp"
+            android:requiresFadingEdge="horizontal"
+            android:scrollbars="none"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/quick_replies"
+                android:layout_width="wrap_content"
+                android:layout_height="96dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
         <!-- 대기 (261:4277 공통_자막_대화 시작): 대화를 시작할까요? -->
         <LinearLayout
@@ -506,17 +548,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="40dp"
                     android:orientation="vertical" />
-
-                <TextView
-                    android:id="@+id/help_vehicle_settings"
-                    style="@style/Voium.Text.BodyLargeStrong"
-                    android:layout_width="290dp"
-                    android:layout_height="80dp"
-                    android:layout_marginTop="40dp"
-                    android:background="@drawable/bg_button_filled_medium"
-                    android:gravity="center"
-                    android:text="@string/open_vehicle_settings"
-                    android:textColor="@android:color/white" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

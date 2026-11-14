@@ -98,6 +98,56 @@ class PleosTextFusionTest {
     }
 
     @Test
+    fun mergedSentenceSplitsAtSpeakerChange() {
+        fusion.onState(SpeechmaticsSession.State.RECORDING)
+        val pleos = recognizer.callback!!
+        // 쉬지 않고 이어 말해 Pleos가 두 사람의 말을 한 문장으로 묶은 경우
+        feed(1.0); pleos.onPartial("창문"); feed(3.0); pleos.onFinal("창문 좀 열어 줄까 응 열어 주세요")
+        smFinal("S1", "창문 좀 열어 줄까", 0.2, 2.0)
+        smFinal("S2", "응 열어 주세요", 2.1, 3.6)
+        assertEquals(
+            listOf("S1" to "창문 좀 열어 줄까", "S2" to "응 열어 주세요"),
+            out.finals.map { it.speaker to it.text },
+        )
+    }
+
+    @Test
+    fun livePartialSwitchesToNewSpeaker() {
+        fusion.onState(SpeechmaticsSession.State.RECORDING)
+        val pleos = recognizer.callback!!
+        feed(1.0); pleos.onPartial("창문"); feed(2.0)
+        smFinal("S1", "창문 좀 열어 줄까", 0.2, 2.0)
+        fusion.onPartial(listOf(Segment("p", "S2", "응 열어", 2.1, 3.0)))
+        pleos.onPartial("창문 좀 열어 줄까 응 열어")
+        // 말하는 중인 자막도 바뀐 화자부터는 새 사람 이름으로 보입니다.
+        assertEquals(
+            listOf("S1" to "창문 좀 열어 줄까", "S2" to "응 열어"),
+            out.partial.map { it.speaker to it.text },
+        )
+    }
+
+    @Test
+    fun splitPointFollowsDiarizedWords() {
+        // 글자 수 비율로만 보면 "20분" 뒤에서 나뉘지만, 화자 구분 글자와 맞춰 "남았대" 뒤에서 나눕니다.
+        val turns = listOf(
+            SpeakerTimeline.Turn("S2", 4.3, 6.26, 1.96, 10.0, "휴게소까지 20분 남았대"),
+            SpeakerTimeline.Turn("S1", 6.29, 8.5, 2.21, 10.0, "주차할 자리가 있으려나"),
+        )
+        val pieces = PleosTextFusion.splitBySpeaker("휴게소까지 20분 남았대 자리가 있으려나", 4.3, 8.5, turns)!!
+        assertEquals(listOf("S2" to "휴게소까지 20분 남았대", "S1" to "자리가 있으려나"), pieces.map { it.speaker to it.text })
+    }
+
+    @Test
+    fun shortInterjectionDoesNotSplit() {
+        val turns = listOf(
+            SpeakerTimeline.Turn("S1", 0.0, 1.5, 1.5, 8.0),
+            SpeakerTimeline.Turn("S2", 1.5, 1.8, 0.3, 1.0),
+            SpeakerTimeline.Turn("S1", 1.8, 3.0, 1.2, 6.0),
+        )
+        assertEquals(null, PleosTextFusion.splitBySpeaker("오늘 날씨 좋다 그치 바람도 시원하고", 0.0, 3.0, turns))
+    }
+
+    @Test
     fun givesUpWaitingAfterMaxWait() {
         fusion.onState(SpeechmaticsSession.State.RECORDING)
         val pleos = recognizer.callback!!

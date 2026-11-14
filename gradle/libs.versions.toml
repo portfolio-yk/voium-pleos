@@ -7,6 +7,7 @@ espressoCore = "3.5.1"
 appcompat = "1.6.1"
 material = "1.10.0"
 okhttp = "4.12.0"
+anthropic = "3.3.0"
 coroutines = "1.9.0"
 orgJson = "20180813"
 # Pleos Connect SDK (nexus-playground.pleos.ai)
@@ -14,6 +15,7 @@ pleosVehicle = "2.3.2"
 pleosNaviHelper = "3.0.5"
 pleosLlm = "2.1.3.2"
 pleosStt = "3.3.1"
+pleosTts = "3.3.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -23,12 +25,14 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+anthropic = { group = "com.anthropic", name = "anthropic-java", version.ref = "anthropic" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 pleos-vehicle = { group = "ai.pleos.playground", name = "Vehicle", version.ref = "pleosVehicle" }
 pleos-navi-helper = { group = "ai.pleos.playground", name = "NaviHelper", version.ref = "pleosNaviHelper" }
 pleos-llm = { group = "ai.pleos.playground", name = "LLM", version.ref = "pleosLlm" }
 pleos-stt = { group = "ai.pleos.playground", name = "SpeechToText", version.ref = "pleosStt" }
+pleos-tts = { group = "ai.pleos.playground", name = "TextToSpeech", version.ref = "pleosTts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

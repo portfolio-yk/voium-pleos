@@ -83,13 +83,15 @@ class SpeakerIdentificationTest {
         val enroll = RecognitionConfig.startRecognition(SpeechmaticsSession.Options(getSpeakers = true), 16000)
             .getJSONObject("transcription_config").getJSONObject("speaker_diarization_config")
         assertTrue(enroll.getBoolean("get_speakers"))
+        assertTrue(enroll.getBoolean("prefer_current_speaker"))
         assertFalse(enroll.has("speakers"))
 
         val plain = RecognitionConfig.startRecognition(SpeechmaticsSession.Options(), 16000)
             .getJSONObject("transcription_config").getJSONObject("speaker_diarization_config")
         assertFalse(plain.has("speakers"))
-        assertFalse(plain.has("speaker_sensitivity"))
-        assertTrue(plain.getBoolean("prefer_current_speaker"))
+        // 등록 목소리가 없어도 새 화자 감도는 보내고, 현재 화자 유지는 끕니다(화자 바뀜을 놓치지 않게).
+        assertEquals(0.5, plain.getDouble("speaker_sensitivity"), 0.0)
+        assertFalse(plain.getBoolean("prefer_current_speaker"))
     }
 
     @Test

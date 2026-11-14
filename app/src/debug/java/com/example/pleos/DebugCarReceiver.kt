@@ -17,12 +17,37 @@ import com.example.pleos.car.CarSignals
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es history demo   (예시 대화 기록을 저장하고 AI 요약 요청)
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es stt device     (Pleos STT 시험, PleosSttProbe 참고)
  * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es mic file       (마이크 대신 files/fake_mic.wav, off로 되돌림)
+ * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es reply ai1      (빠른 답장 누르기: ai1 = 첫 AI 추천, 1 = 첫 기본 답장)
+ * adb shell am broadcast -n com.example.pleos/.DebugCarReceiver --es suggest demo   (시연용 대화 제안 하나로 고정, 문장을 직접 줘도 됨, off로 되돌림)
  */
 class DebugCarReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         intent.getStringExtra("mic")?.let {
             com.example.pleos.stt.SpeechmaticsSession.debugMicFile =
                 if (it == "file") java.io.File(context.filesDir, "fake_mic.wav") else null
+            return
+        }
+        intent.getStringExtra("reply")?.let {
+            context.sendBroadcast(
+                Intent("com.example.pleos.DEBUG_QUICK_REPLY").setPackage(context.packageName).putExtra("reply", it),
+            )
+            return
+        }
+        intent.getStringExtra("suggest")?.let {
+            val text = when (it) {
+                "off" -> null
+                "demo" -> DEMO_SUGGESTION
+                else -> it.replace("/", "\n").replace(Regex(" *\n *"), "\n")
+            }
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_SUGGESTION, text).apply()
+            return
+        }
+        intent.getStringExtra("tts")?.let {
+            PleosTtsProbe.handle(context, it)
+            return
+        }
+        intent.getStringExtra("llm")?.let {
+            PleosLlmProbe.handle(context, it)
             return
         }
         intent.getStringExtra("stt")?.let {
@@ -78,5 +103,13 @@ class DebugCarReceiver : BroadcastReceiver() {
         )
         com.example.pleos.history.ConversationHistoryStore(context).upsert(record)
         com.example.pleos.history.ConversationSummarizer.summarize(context, record.id)
+    }
+
+    companion object {
+        /** MainActivity.renderSuggestion이 읽습니다. */
+        private const val PREFS = "debug_demo"
+        private const val KEY_SUGGESTION = "suggestion"
+        /** 시연 대본(병원 가는 길)에 맞춘 제안 */
+        private const val DEMO_SUGGESTION = "오늘 진료 때 선생님께\n여쭤볼 거 있으세요?"
     }
 }

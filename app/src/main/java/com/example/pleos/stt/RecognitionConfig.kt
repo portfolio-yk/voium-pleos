@@ -26,7 +26,12 @@ object RecognitionConfig {
             .put("enable_partials", true)
             .put("max_delay", options.maxDelay.coerceIn(0.7, 4.0))
         if (options.diarization) {
-            val diarization = JSONObject().put("prefer_current_speaker", true)
+            // 대화에서는 prefer_current_speaker를 끕니다. 켜면 비슷한 목소리(가족)가 이어 말할 때 화자가 바뀐 걸 놓칩니다.
+            // 목소리 등록(한 사람만 말함)에서는 켜 두어 한 사람이 둘로 나뉘지 않게 합니다.
+            // 새 화자를 알아보는 감도는 등록 목소리가 없어도 항상 보냅니다.
+            val diarization = JSONObject()
+                .put("prefer_current_speaker", options.getSpeakers)
+                .put("speaker_sensitivity", options.speakerSensitivity.coerceIn(0.0, 1.0))
             // 목소리 등록: 세션이 끝날 때 SpeakersResult로 식별값을 받습니다.
             if (options.getSpeakers) diarization.put("get_speakers", true)
             val speakers = limitIdentifiers(options.enrolledSpeakers)
@@ -37,7 +42,6 @@ object RecognitionConfig {
                         .put("label", speaker.label)
                         .put("speaker_identifiers", JSONArray(speaker.identifiers))
                 }))
-                diarization.put("speaker_sensitivity", options.speakerSensitivity.coerceIn(0.0, 1.0))
             }
             transcription.put("speaker_diarization_config", diarization)
         }

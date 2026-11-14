@@ -43,6 +43,7 @@
     <color name="voium_button_basic">#0D131417</color>       <!-- button/basic/enabled (5%) -->
     <color name="voium_text_quaternary">#52131417</color>    <!-- text/dark/quaternary (32%) -->
     <color name="voium_basic100">#FFEDEEF2</color>           <!-- basic/100 -->
+    <color name="voium_icon_button">#FFF1F2F3</color>        <!-- 상단 바 도움말·설정 원형 버튼 바탕 -->
     <color name="voium_danger">#FFD93B3B</color>             <!-- 프로필 삭제 -->
     <color name="voium_warning">#FFD97706</color>            <!-- 목소리 등록: 다시 요청 -->
     <color name="voium_karaoke_rest">#FFBFC3CC</color>       <!-- 아직 읽지 않은 글자 -->

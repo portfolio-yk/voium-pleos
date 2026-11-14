@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 빠른 답장: 지금 읽는 중인 칩 (상단 바 대화 종료와 같은 진한 회색) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <solid android:color="@color/voium_end_button" />
+        </shape>
+    </item>
+</ripple>

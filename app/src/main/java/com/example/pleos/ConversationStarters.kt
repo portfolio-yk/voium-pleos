@@ -11,8 +11,11 @@ object ConversationStarters {
 
     enum class Kind { TIME, PLACE, WEATHER }
 
-    /** 한 장의 제안 카드: 아이콘 종류, 상황 문구("오후 12:40 · 점심시간"), 질문 */
-    data class Card(val kind: Kind, val label: String, val question: String)
+    /**
+     * 한 장의 제안 카드: 아이콘 종류, 상황 문구("오후 12:40 · 점심시간"), 질문,
+     * 그 카드의 질문 중 몇 번째인지(questionIndex / questionCount).
+     */
+    data class Card(val kind: Kind, val label: String, val question: String, val questionIndex: Int = 0, val questionCount: Int = 1)
 
     private val RAIN = listOf(
         "창문에 김 서리면\n말해 줄래요?",
@@ -23,15 +26,28 @@ object ConversationStarters {
     /**
      * 지금 보여 줄 수 있는 카드들. 시간 카드는 늘 있고, 내비 안내 중이면 위치 카드,
      * 비가 오면(와이퍼 작동) 날씨 카드가 붙습니다. round는 몇 바퀴째인지(질문 고르기).
+     * ai에 Gleo AI가 만든 질문이 있으면 그 질문을, 없으면 기본 질문을 씁니다.
      */
-    fun cards(hour: Int, timeText: String, trip: Pair<String, Int>?, raining: Boolean, round: Int): List<Card> = buildList {
+    fun cards(
+        hour: Int,
+        timeText: String,
+        trip: Pair<String, Int>?,
+        raining: Boolean,
+        round: Int,
+        ai: Map<Kind, List<String>>? = null,
+    ): List<Card> = buildList {
+        fun card(kind: Kind, label: String, defaults: List<String>): Card {
+            val questions = ai?.get(kind)?.takeIf { it.isNotEmpty() } ?: defaults
+            val index = round.mod(questions.size)
+            return Card(kind, label, questions[index], index, questions.size)
+        }
         val time = slotFor(hour)
-        add(Card(Kind.TIME, "$timeText · ${time.label}", time.questions[round.mod(time.questions.size)]))
+        add(card(Kind.TIME, "$timeText · ${time.label}", time.questions))
         if (trip != null) {
             val place = forTrip(trip.first, trip.second)
-            add(Card(Kind.PLACE, place.label, place.questions[round.mod(place.questions.size)]))
+            add(card(Kind.PLACE, place.label, place.questions))
         }
-        if (raining) add(Card(Kind.WEATHER, "비 오는 중", RAIN[round.mod(RAIN.size)]))
+        if (raining) add(card(Kind.WEATHER, "비 오는 중", RAIN))
     }
 
     private val MORNING = Slot("아침 시간", listOf(
