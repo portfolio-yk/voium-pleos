@@ -44,8 +44,22 @@ android {
         buildConfig = true
     }
 
+    // 릴리즈 서명: local.properties의 release.* 값으로 서명합니다(키 파일과 비밀번호는 Git에 올리지 마세요).
+    val releaseStoreFile = localProperties.getProperty("release.storeFile", "").trim()
+    signingConfigs {
+        if (releaseStoreFile.isNotEmpty()) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = localProperties.getProperty("release.storePassword", "")
+                keyAlias = localProperties.getProperty("release.keyAlias", "")
+                keyPassword = localProperties.getProperty("release.keyPassword", "")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (releaseStoreFile.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
