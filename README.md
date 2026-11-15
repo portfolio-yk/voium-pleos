@@ -10,13 +10,13 @@
 ### APK로 바로 설치
 
 ```bash
-adb install -r apk/VOIUM-release.apk
+adb install -r "apk/소소만_VOIUM_release.apk"
 ```
 
 Pleos 에뮬레이터는 사용자 10에서 앱이 실행됩니다. 설치가 보이지 않으면 사용자를 지정해 설치하세요.
 
 ```bash
-adb install -r --user 10 apk/VOIUM-release.apk
+adb install -r --user 10 "apk/소소만_VOIUM_release.apk"
 ```
 
 설치 후 홈 화면 독의 **VOIUM** 아이콘을 눌러 실행하고, 처음 실행할 때 마이크 권한을 허용하세요.
@@ -102,7 +102,6 @@ release.keyPassword=비밀번호
 
 | 파일 | 설명 |
 | --- | --- |
-| [`apk/VOIUM-release.apk`](apk/VOIUM-release.apk) | 릴리즈 빌드 (릴리즈 키로 서명) |
-| [`apk/VOIUM-debug.apk`](apk/VOIUM-debug.apk) | 디버그 빌드 (시연용 디버그 명령 포함) |
+| [`apk/소소만_VOIUM_release.apk`](apk/%EC%86%8C%EC%86%8C%EB%A7%8C_VOIUM_release.apk) | 릴리즈 빌드 (릴리즈 키로 서명) |
 
-> 두 APK는 서명이 달라 서로 덮어 설치할 수 없습니다. 바꿔 설치하려면 먼저 `adb uninstall com.example.pleos`로 지우세요.
+> 이미 같은 패키지(`com.example.pleos`)의 다른 서명 앱이 설치되어 있으면 덮어 설치할 수 없습니다. 먼저 `adb uninstall com.example.pleos`로 지우세요.
